@@ -4,7 +4,7 @@ Track your real-life quests and side-quests with this retro-inspired to-do list 
 
 This app is intended to be very low on the "gamification".  Most hard workers need a boost, not a distraction.  
 
-**NOTE:** It's up currently to track my progress, and if you want to fork and use the code, and laugh at how much v0, gemini, cursor, and my brain overcomplicated things, you're more than free to do it.
+**NOTE:** It's up currently to track my progress, and if you want to fork and use the code, and laugh at how much v0, gemini, cursor, and my brain overcomplicated things, you're more than free to do it.  **I am balancing dev on this with a personal actually gamified search engine that is fully hostable and private - based on searXNG, as well as a few other apps and websites and really crunched for time so this is getting to a certain state and passed for awhile!**
 
 ## Things to Come
 
