@@ -1,6 +1,6 @@
 # 🎮 VG-TODO: A Game-Themed To-Do Quest Log ✅
 
-Track your real-life quests and side-quests with this retro-inspired to-do list application, styled after the classic Nintendo Entertainment System! Manage your tasks, group them into epic quest chains, and watch your character progress (well, visually at least!).
+Track your real-life quests and side-quests with this retro-inspired to-do list application, styled after the classic Nintendo Entertainment System! Manage your tasks, group them into epic quest chains, and (eventually) watch your character progress.
 
 This app is intended to be very low on the "gamification".  Most hard workers need a boost, not a distraction.  
 
