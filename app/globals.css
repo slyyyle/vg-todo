@@ -1,0 +1,330 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+* !!! WARNING: DO NOT USE TAILWIND CLASSES FOR COLORS OR STYLING !!!
+* !!! ONLY USE NES.CSS FOR STYLING AND COLORS !!!
+* !!! TAILWIND SHOULD ONLY BE USED FOR LAYOUT (FLEX, GRID) AND SPACING (P-*, M-*) !!!
+* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*/
+
+/* =====================================
+   Base Styles
+   ===================================== */
+html,
+body {
+  font-family: "Press Start 2P", system-ui, -apple-system, sans-serif;
+  image-rendering: pixelated;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: "Press Start 2P", system-ui, -apple-system, sans-serif;
+}
+
+/* =====================================
+   CSS Variables
+   ===================================== */
+:root {
+  --background: #212529;
+  --foreground: #f8f9fa;
+  --primary: #92cc41;
+  --secondary: #209cee;
+  --accent: #e76e55;
+  --muted: #757575;
+  --border: #444;
+  --nes-red: #e4000f; /* Updated NES red */
+  --pink: #ff69b4; /* Added pink color */
+  --nes-text-white: #f8f9fa;
+  --nes-text-black: #212529;
+}
+
+/* =====================================
+   NES.css Resets & Core Overrides
+   ===================================== */
+/* Fix potential conflicts between Tailwind's preflight and NES.css */
+.nes-btn,
+.nes-input,
+.nes-select select,
+.nes-container,
+.nes-checkbox,
+.nes-progress,
+.nes-badge {
+  margin: revert;
+  padding: revert;
+  border: revert;
+  appearance: revert;
+}
+
+/* Fix for NES.css buttons inside Shadcn components */
+.nes-btn {
+  margin: 0;
+}
+
+/* 
+ * NOTE on Shadcn Dialog/Modals and Click Events:
+ * Shadcn's DialogContent component can interfere with pointer events (click, mousedown, etc.) 
+ * on non-standard interactive elements (e.g., <i> tags used as clickable icons).
+ * If clicks aren't registering on such elements inside a Dialog,
+ * wrap the element in a standard <button type="button">.
+ * Style the button to be visually hidden (e.g., transparent bg, no padding/border) 
+ * and attach the event handler (onClick, onMouseDown, etc.) to the button instead of the inner element.
+ */
+
+/*
+ * NOTE on NES.css Specificity & Tailwind:
+ * Sometimes, default browser styles or Tailwind utility classes might have higher
+ * specificity than a NES.css class, preventing it from applying as expected
+ * (e.g., margins, padding, positioning, not just colors).
+ * If a NES.css style or a related utility (like a negative margin `!-ml-3`)
+ * isn't working, try prefixing the utility class with `!` (Tailwind's important modifier)
+ * to increase its specificity and force it to override other styles.
+ * Use this sparingly, as overuse of !important can make CSS harder to debug.
+ */
+
+/* =====================================
+   Custom Global Utility Classes/Patterns
+   ===================================== */
+.quest-container {
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  border-width: 4px;
+}
+
+.quest-container:hover {
+  transform: translateY(-2px);
+}
+
+.completed-quest {
+  opacity: 0.7;
+  position: relative;
+}
+
+.completed-quest::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.priority-high {
+  border-color: var(--accent) !important;
+}
+
+.priority-medium {
+  border-color: var(--secondary) !important;
+}
+
+.priority-low {
+  border-color: var(--primary) !important;
+}
+
+/* =====================================
+   Base NES Component Styles & Variants
+   ===================================== */
+.nes-container {
+  position: relative; /* Careful: creates stacking context */
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.nes-container.is-dark {
+  background-color: #1a1d20;
+}
+
+.nes-text.is-success {
+  color: var(--primary);
+}
+
+.nes-text.is-white {
+  color: var(--nes-text-white) !important;
+}
+
+.nes-text.is-black {
+  color: var(--nes-text-black) !important;
+}
+
+.nes-progress {
+  height: 21px !important;
+  width: 100% !important;
+}
+
+/* =====================================
+   Specific Global Patterns
+   ===================================== */
+.nes-container.with-title > .title {
+  margin: -2rem 0 1rem;
+  padding: 0 0.5rem;
+  display: table;
+  background-color: #fff;
+}
+
+.nes-container.is-dark.with-title > .title {
+  background-color: #212529;
+  color: #fff;
+}
+
+/* =====================================
+   Specific Overrides
+   ===================================== */
+.nes-btn.is-error[style*="ff69b4"] {
+  background-color: #ff69b4 !important;
+  border-color: #ff69b4 !important;
+}
+
+/* =====================================
+   Library Overrides (react-day-picker)
+   ===================================== */
+.rdp { /* Base/Small/Medium size */
+  --rdp-accent-color: var(--primary);
+  --rdp-background-color: var(--secondary);
+  font-family: "Press Start 2P", system-ui, sans-serif !important;
+}
+
+.rdp-table { /* Ensure internal table stretches */
+  width: 100%;
+}
+
+.rdp-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1em;
+  color: var(--foreground);
+}
+
+.rdp-caption_label { /* Base/Small/Medium size */
+  color: var(--primary);
+}
+
+.rdp-nav_button { /* Base/Small/Medium size */
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--foreground);
+}
+
+.rdp-nav_button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.rdp-head_cell { /* Base/Small/Medium size */
+  font-weight: normal;
+  color: var(--muted);
+  padding-bottom: 0.5em;
+}
+
+.rdp-day { /* Base/Small/Medium size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 !important;
+  border: 1px solid transparent;
+  color: var(--foreground) !important;
+}
+
+/* Restore original styling for today */
+.rdp-day_today {
+  font-weight: bold;
+  color: var(--accent) !important;
+}
+
+.rdp-day:hover:not([disabled]) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid var(--border);
+}
+
+/* Remove .rdp-day_today from this selector list */
+.rdp-day_selected,
+.rdp-day_selected:focus-visible,
+.rdp-day_selected:hover {
+  background-color: var(--primary) !important;
+  color: var(--background) !important;
+  border: 1px solid var(--primary);
+}
+
+/* Custom theme class for consistent styling */
+.nes-calendar-theme .rdp-day,
+.nes-calendar-theme .rdp-caption_label,
+.nes-calendar-theme .rdp-head_cell,
+.nes-calendar-theme .rdp-nav_button {
+  color: var(--nes-text-white) !important; /* Ensure text is white */
+}
+
+/* Ensure selected day text remains dark */
+.nes-calendar-theme .rdp-day_selected {
+ color: var(--background) !important;
+}
+
+/* Ensure today text uses accent color */
+.nes-calendar-theme .rdp-day_today {
+  color: var(--accent) !important;
+}
+
+/* Ensure disabled/outside day text remains muted */
+.nes-calendar-theme .rdp-day_disabled,
+.nes-calendar-theme .rdp-day_outside {
+  color: var(--muted) !important;
+}
+
+.rdp-button:focus-visible:not([disabled]) {
+    outline: none;
+    box-shadow: none;
+    border: 1px solid var(--secondary);
+}
+
+.rdp-day_disabled {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+.rdp-day_outside {
+  color: var(--muted);
+}
+
+.rdp:focus-visible {
+  outline: none;
+}
+
+.rdp-nav_button:focus-visible {
+    outline: none;
+}
+
+/* Larger Calendar Adjustments for Wide Screens */
+@media (min-width: 1024px) { /* Apply larger styles for screens lg breakpoint and up */
+  .rdp {
+  }
+
+  .rdp-caption_label {
+  }
+
+  .rdp-nav_button {
+  }
+
+  .rdp-head_cell {
+  }
+
+  .rdp-day {
+  }
+}
+
+/* Ensure other .rdp styles don't conflict */
+/* You might need to adjust specificity if needed */
+
+/* .calendar-nes-container { */
+/*  padding: 1rem 1rem !important; */ /* Override default padding */
+/* } */

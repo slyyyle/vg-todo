@@ -1,0 +1,54 @@
+{
+  "quests": [
+    {
+      "text": "af",
+      "dueDate": null,
+      "difficulty": 2.5,
+      "value": 2,
+      "questType": "side",
+      "objectives": [
+        {
+          "id": "4773b119-8e86-4337-a2e0-324bb15d22c6",
+          "text": "ff",
+          "completed": false
+        }
+      ],
+      "chainId": "c102a52c-b47c-442f-81cc-0ee0b3508125",
+      "id": "6e473090-e97e-4c4f-bb64-0b74d8b1cfea",
+      "completed": false,
+      "xp": 10,
+      "createdAt": "2025-04-12T21:01:54.083Z",
+      "completedAt": null
+    },
+    {
+      "text": "fasdfs",
+      "dueDate": "2025-04-02T05:00:00.000Z",
+      "difficulty": 2.5,
+      "value": 2,
+      "questType": "side",
+      "objectives": [],
+      "id": "deb5defe-fa63-4002-ac98-a7c5a761e9f5",
+      "completed": false,
+      "xp": 10,
+      "createdAt": "2025-04-12T21:05:26.136Z",
+      "completedAt": null
+    }
+  ],
+  "questChains": [
+    {
+      "id": "c102a52c-b47c-442f-81cc-0ee0b3508125",
+      "name": "fasfdsfsd",
+      "difficulty": 2.5,
+      "value": 2,
+      "createdAt": "2025-04-12T20:09:35.652Z",
+      "dueDate": "2025-04-15T05:00:00.000Z"
+    }
+  ],
+  "character": {
+    "level": 1,
+    "title": "Novice Adventurer",
+    "avatar": "mario",
+    "progress": 0,
+    "createdAt": "2025-04-12T12:00:00.000Z"
+  }
+}
