@@ -42,6 +42,8 @@ This project brings the retro vibes using a *modern (LOL)* tech stack:
 
 *(Based on `components.json` confirming Shadcn/ui style (`default`), UI library (`@radix-ui/react-icons`), and utility (`tailwind-merge`, `clsx`), and `next.config.mjs` being standard for Next.js)*
 
+In other words it was made with v0 and then pulled locally and further developed in Cursor.  Still learning, and laughing.
+
 ## 🚀 Getting Started
 
 1.  **Clone the repository:**
@@ -49,13 +51,13 @@ This project brings the retro vibes using a *modern (LOL)* tech stack:
     git clone https://github.com/slyyyle/vg-todo.git
     cd vg-todo
     ```
-2.  **Install dependencies:** (Uses pnpm based on lockfile)
+2.  **Install dependencies:**
     ```bash
-    pnpm install
+    npm install
     ```
 3.  **Run the development server:**
     ```bash
-    pnpm dev
+    npm dev
     ```
 4.  Open [http://localhost:3000](http://localhost:3000) in your browser. ▶️
 
