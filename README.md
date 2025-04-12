@@ -28,7 +28,7 @@ This app is intended to be very low on the "gamification".  Most hard workers ne
 
 ## 🛠️ Tech Stack
 
-This project brings the retro vibes using a modern tech stack:
+This project brings the retro vibes using a *modern (LOL)* tech stack:
 
 *   **Framework:** [Next.js](https://nextjs.org/) 14+ (App Router) 🚀
 *   **Language:** [TypeScript](https://www.typescriptlang.org/) 🔷
