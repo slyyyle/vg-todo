@@ -2,7 +2,7 @@
 
 Track your real-life quests and side-quests with this retro-inspired to-do list application, styled after the classic Nintendo Entertainment System! Manage your tasks, group them into epic quest chains, and watch your character progress (well, visually at least!).
 
-![image](https://github.com/user-attachments/assets/36d9e5a4-fbf4-44d4-b84b-8ae841207752)
+![image](https://github.com/user-attachments/assets/e3d6b57f-6c6e-420f-8bda-72b2712e8d7d)
 
 ## ✨ Key Features
 
