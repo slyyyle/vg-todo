@@ -4,10 +4,12 @@ Track your real-life quests and side-quests with this retro-inspired to-do list 
 
 This app is intended to be very low on the "gamification".  Most hard workers need a boost, not a distraction.  
 
+**NOTE:** It's up currently to track my progress, and if you want to fork and use the code, and laugh at how much v0, gemini, cursor, and my brain overcomplicated things, you're more than free to do it.
+
 ## Things to Come
 
 *   **Simple Integration:** The whole point of this app, is to be a bridge, with simple json output, that can be used many ways.  I will be developing simple **Obsidian** and **Waybar** integration, which for a capable developer or Linux user is VERY easy from the JSON export.
-*   **Multiple Profiles:** Not sure why, but maybe people'd like multiple.  Really this is just going to force development for a "profile creation" screen as right now this is not intended to be a quick pull.  It's up currently to track my progress, and if you want to fork and use the code, and laugh at how much v0, gemini, cursor, and my brain overcomplicated things, you're more than free to do it.
+*   **Multiple Profiles:** Not sure why, but maybe people'd like multiple.  Really this is just going to force development for a "profile creation" screen as right now this is not intended to be a quick pull and is set to the time I in fact started using it.  
 *   **More VG Skins:** DID YOU REALLY THINK I'M JUST *NOT* GOING TO USE SNES AND PLAYSTATION 1 CSS STYLE SHEETS WHEN THEY BOTH EXIST?
 
 ![image](https://github.com/user-attachments/assets/e3d6b57f-6c6e-420f-8bda-72b2712e8d7d)
