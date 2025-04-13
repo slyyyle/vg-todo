@@ -25,6 +25,7 @@ interface ListViewProps {
   onEditTodo: (todo: Quest) => void
   onToggleObjective: (todoId: string, objectiveId: string) => void
   characterCreatedAt: Date | null
+  filterLabel: string
 }
 
 // Helper function to format duration
@@ -45,7 +46,7 @@ function formatDuration(ms: number): string {
   return `${seconds}s`; // Only seconds if less than a minute
 }
 
-function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, onToggleObjective, characterCreatedAt }: ListViewProps) {
+function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, onToggleObjective, characterCreatedAt, filterLabel }: ListViewProps) {
   const { ref } = useSourceInfo("ListView", "components/views/ListView.tsx")
 
   /* ADD START */
@@ -295,8 +296,79 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
     }));
   };
 
+  // Calculate total value of all quests
+  const totalValue = todos.reduce((sum, todo) => sum + (todo.value ?? 0), 0);
+
+  // Calculate overall average difficulty
+  const allQuestsWithDifficulty = todos.filter(todo => todo.difficulty !== undefined && todo.difficulty !== null);
+  const overallTotalDifficulty = allQuestsWithDifficulty.reduce((sum, todo) => sum + (todo.difficulty ?? 0), 0);
+  const overallAverageDifficulty = allQuestsWithDifficulty.length > 0 ? overallTotalDifficulty / allQuestsWithDifficulty.length : 0;
+  const formattedOverallAverageDifficulty = overallAverageDifficulty.toFixed(1);
+
+  // Calculate overall progress
+  const totalOverallQuests = todos.length;
+  const completedOverallQuests = todos.filter(q => q.completed).length;
+  const overallProgressPercent = totalOverallQuests > 0 ? Math.round((completedOverallQuests / totalOverallQuests) * 100) : 0;
+
   return (
     <div ref={ref} data-testid="list-view" className="space-y-4">
+      {/* --- Start: Overall Summary --- */}
+      <div className="nes-container is-dark with-title">
+        <p className="title">{`Summary - ${filterLabel}`}</p>
+        {/* Use Flexbox for two columns */}
+        <div className="p-2 flex flex-row gap-x-6">
+          {/* Column 1 (Originally Column 2) */}
+          <div className="flex flex-col space-y-1 w-1/2">
+            {/* Overall Progress Row */}
+            <div className="flex items-center gap-x-2">
+              <span className="nes-text is-disabled">Progress:</span>
+              <span className="nes-text is-white">
+                {`${completedOverallQuests} / ${totalOverallQuests} (${overallProgressPercent}%)`}
+              </span>
+            </div>
+            {/* Quests Completed Row */}
+            <div className="flex items-center gap-x-2">
+              <span className="nes-text is-disabled">Quests Completed:</span>
+              <span className="nes-text is-white">
+                {completedOverallQuests}
+              </span>
+            </div>
+            {/* Quests Accepted Row */}
+            <div className="flex items-center gap-x-2">
+              <span className="nes-text is-disabled">Quests Accepted:</span>
+              <span className="nes-text is-white">
+                {totalOverallQuests}
+              </span>
+            </div>
+          </div>
+          {/* Column 2 (Originally Column 1) */}
+          <div className="flex flex-col space-y-1 w-1/2">
+            {/* Total Value Row */}
+            <div className="flex items-center gap-x-2">
+              <span className="nes-text is-disabled">Total Value:</span>
+              <span className="nes-text is-white">{totalValue}</span>
+              <i className="nes-icon coin is-small"></i>
+            </div>
+            {/* Overall Difficulty Row */}
+            {allQuestsWithDifficulty.length > 0 && (
+              <div className="flex items-center gap-x-2">
+                <span className="nes-text is-disabled">Avg Difficulty:</span>
+                <span className="nes-text is-white">{formattedOverallAverageDifficulty}</span>
+                <i className="nes-icon star is-small"></i>
+              </div>
+            )}
+            {/* Time Played Row (MOVED HERE) */}
+            <div className="flex items-center gap-x-2">
+              <span className="nes-text is-disabled">Time Played:</span>
+              <span className={`nes-text ${elapsedTimeString === 'ERROR' ? 'is-error' : 'is-white'}`}>
+                {elapsedTimeString}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* --- End: Overall Summary --- */}
+
       {/* Render each chain group (using sortedDisplayChainIds) */}
       {initialSortedChainIds.map(chainId => {
         // Find chainData using the map
@@ -313,6 +385,15 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
 
         // Calculate Progress Percentage
         const progressPercent = totalQuests > 0 ? Math.round((completedQuests / totalQuests) * 100) : 0;
+
+        // Calculate Total Value for this chain's quests
+        const chainValue = chainTodos.reduce((sum, todo) => sum + (todo.value ?? 0), 0);
+
+        // Calculate Average Difficulty for this chain's quests
+        const questsWithDifficulty = chainTodos.filter(todo => todo.difficulty !== undefined && todo.difficulty !== null);
+        const totalDifficulty = questsWithDifficulty.reduce((sum, todo) => sum + (todo.difficulty ?? 0), 0);
+        const averageDifficulty = questsWithDifficulty.length > 0 ? totalDifficulty / questsWithDifficulty.length : 0;
+        const formattedAverageDifficulty = averageDifficulty.toFixed(1); // Format to one decimal place
 
         // Calculate Time Status
         let timeStatus = "Free Play!";
@@ -393,10 +474,7 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
                   {/* Time Status Section */}
                   {chainId === 'side-quests' ? (
                     <>
-                      <span className="nes-text is-disabled">Time Played:</span>
-                      <span className={`nes-text ${elapsedTimeString === 'ERROR' ? 'is-error' : 'is-white'}`}>
-                        {elapsedTimeString}
-                      </span>
+                      {/* REMOVED Time Played display from here */}
                     </>
                   ) : (
                     // Show Due Date Info for Normal Chains
@@ -405,34 +483,25 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
                       <span className={timeStatusClass}>{timeStatus}</span>
                     </>
                   )}
-                  {/* Value Section */}
-                  {(chainData?.value !== undefined && chainData.value !== null && chainData.value > 0) && (
+                  {/* Total Quest Value Section (Renamed to Value:) */}
+                  {chainValue > 0 && (
                     <>
-                      <span className="nes-text is-disabled">Value:</span> 
-                      <span className="flex items-center"> 
-                        {[...Array(chainData.value ?? 0)].map((_, i) => (
-                          <i key={`pane-coin-${chainId}-${i}`} className={`nes-icon coin is-small${i > 0 ? ' ml-px' : ''}`}></i>
-                        ))}
+                      <span className="nes-text is-disabled">Value:</span>
+                      <span className="flex items-center">
+                        <span className="nes-text is-white mr-1">{chainValue}</span>
+                        <i className="nes-icon coin is-small"></i>
                       </span>
                     </>
                   )}
-                  {/* Difficulty Section */}
-                  {(chainData?.difficulty !== undefined && chainData.difficulty !== null) && (
+                  {/* Average Quest Difficulty Section (Simplified) */}
+                  {questsWithDifficulty.length > 0 && (
                     <>
-                      <span className="nes-text is-disabled">Difficulty:</span> 
-                      <span className="flex items-center"> 
-                        {[1, 2, 3, 4].map((starIndex) => {
-                          const isFull = (chainData.difficulty ?? 0) >= starIndex;
-                          const isHalf = (chainData.difficulty ?? 0) >= starIndex - 0.5 && (chainData.difficulty ?? 0) < starIndex;
-                          const isEmpty = (chainData.difficulty ?? 0) < starIndex - 0.5;
-                          const starClasses = cn(
-                            "nes-icon is-small star",
-                            { "is-half": isHalf },
-                            { "is-empty": isEmpty },
-                            starIndex > 1 ? "ml-px" : ""
-                          );
-                          return <i key={`pane-star-${chainId}-${starIndex}`} className={starClasses}></i>;
-                        })}
+                      <span className="nes-text is-disabled">Difficulty:</span>
+                      <span className="flex items-center">
+                        {/* Display formatted numerical average */}
+                        <span className="nes-text is-white mr-1">{formattedAverageDifficulty}</span>
+                        {/* Display a single star icon */}
+                        <i className="nes-icon star is-small"></i>
                       </span>
                     </>
                   )}
@@ -444,7 +513,7 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
 
             {/* Conditionally render quest list based on collapsed state */}
             {!collapsedChains[chainId] && (
-              <div className="space-y-2">
+        <div className="space-y-2">
                 {/* Conditionally render todos OR an empty state message */}
                 {chainTodos.length > 0 ? (
                   chainTodos.map((todo, index) => {
@@ -496,23 +565,23 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
                     // --- End Calculate Relative Due Date String ---
 
                     return (
-                      <div
-                        key={todo.id}
+              <div
+                key={todo.id}
                         className={`relative p-3 border-b border-zinc-600 bg-zinc-600 group ${todo.completed ? "bg-opacity-40 bg-gray-800" : ""}`}
-                      >
+              >
                         {/* --- Start: Individual Todo Rendering --- */}
-                        <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start">
                            {/* Quest checkbox and text */}
-                           <div className="flex items-center">
-                             <label>
-                               <input
-                                 type="checkbox"
-                                 className="nes-checkbox is-dark"
-                                 checked={todo.completed}
-                                 onChange={() => handleToggleTodo(todo.id)}
-                               />
+                  <div className="flex items-center">
+                    <label>
+                      <input
+                        type="checkbox"
+                        className="nes-checkbox is-dark"
+                        checked={todo.completed}
+                        onChange={() => handleToggleTodo(todo.id)}
+                      />
                                <span className={`ml-2 ${todo.completed ? "nes-text is-success" : "nes-text is-white"}`}>{todo.text}</span>
-                             </label>
+                    </label>
                            </div>
                         </div>
                         {/* Objectives Section */}
@@ -522,7 +591,7 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
                                  {todo.objectives.length === 0
                                     ? `Objectives: ${todo.completed ? 1 : 0}/1`
                                     : `Objectives: ${todo.objectives.filter((obj) => obj.completed).length}/${todo.objectives.length}`}
-                              </span>
+                        </span>
                               <div className="flex items-end space-x-2">
                                  {/* New container for STACKING Stars and Coins */}
                                  <div className="flex flex-col items-start space-y-1 mr-1">
@@ -542,18 +611,18 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
                                       {[...Array(todo.value ?? 0)].map((_, i) => (
                                         <i key={`coin-${i}`} className={`nes-icon coin is-small${i > 0 ? ' ml-px' : ''}`}></i>
                                       ))}
-                                    </div>
-                                 </div>
+                      </div>
+                    </div>
                                  {/* Buttons - Ensure they are here */}
                                  <button className="nes-btn is-primary is-small" onClick={() => onEditTodo(todo)}>
-                                    <Edit className="h-4 w-4" />
-                                 </button>
+                      <Edit className="h-4 w-4" />
+                    </button>
                                  <button className="nes-btn is-error is-small" onClick={() => handleDeleteClick(todo.id)}>
-                                    <Trash className="h-4 w-4" />
-                                 </button>
-                              </div>
-                           </div>
-                           <progress
+                      <Trash className="h-4 w-4" />
+                    </button>
+                  </div>
+                    </div>
+                    <progress
                               // Conditional Progress Bar Value & Class
                               className={`nes-progress ${todo.objectives.length === 0
                                     ? getProgressBarClass(todo.completed ? 100 : 0)
@@ -561,20 +630,20 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
                               value={todo.objectives.length === 0
                                     ? (todo.completed ? 100 : 0)
                                     : getObjectiveProgress(todo.objectives)}
-                              max="100"
-                           ></progress>
+                      max="100"
+                    ></progress>
                            {/* Objective List */}
                            {todo.objectives.length > 0 && (
-                              <ul className="mt-1 space-y-1">
-                                 {todo.objectives.map((objective) => (
-                                    <li key={objective.id} className="flex items-center">
-                                       <label>
+                    <ul className="mt-1 space-y-1">
+                      {todo.objectives.map((objective) => (
+                        <li key={objective.id} className="flex items-center">
+                          <label>
                                           <input type="checkbox" className="nes-checkbox is-dark" checked={objective.completed} onChange={() => onToggleObjective(todo.id, objective.id)} />
                                           <span className={`ml-2 text-xs ${objective.completed ? "nes-text is-success" : "nes-text is-white"}`}>{objective.text}</span>
-                                       </label>
-                                    </li>
-                                 ))}
-                              </ul>
+                          </label>
+                        </li>
+                      ))}
+                    </ul>
                            )}
                         </div>
                         {/* --- End: Individual Todo Rendering --- */}
@@ -606,15 +675,15 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
                             </>
                           )}
                         </div>
-                      </div>
+                  </div>
                     )
                   })
                 ) : (
                   <p className="text-center text-sm nes-text is-disabled p-4">No quests in this chain yet.</p>
                 )}
               </div>
-            )}
-          </div>
+          )}
+        </div>
         )
       })}
 

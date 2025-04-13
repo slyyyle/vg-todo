@@ -213,6 +213,25 @@ export default function Home() {
     }
   })
 
+  // Determine the label for the current filter
+  let filterLabel = "All Quests";
+  switch (filterBy) {
+    case "active":
+      filterLabel = "Active Quests";
+      break;
+    case "completed":
+      filterLabel = "Completed Quests";
+      break;
+    case "chained":
+      filterLabel = "Chained Quests";
+      break;
+    case "side":
+      filterLabel = "Side Quests";
+      break;
+    default:
+      filterLabel = "All Quests"; // Default case
+  }
+
   // Add handler for changing character avatar
   const handleAvatarChange = (newAvatar: string) => {
     setCharacter((prevCharacter) => ({
@@ -350,6 +369,7 @@ export default function Home() {
             }}
             onToggleObjective={toggleObjective}
             characterCreatedAt={character.createdAt}
+            filterLabel={filterLabel}
           />
         )
       case "ideas":

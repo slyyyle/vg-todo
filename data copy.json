@@ -469,6 +469,63 @@
       "completed": false,
       "xp": 10,
       "createdAt": "2025-04-13T14:19:35.923Z"
+    },
+    {
+      "text": "browser text scaling",
+      "dueDate": null,
+      "difficulty": 4,
+      "value": 4,
+      "questType": "side",
+      "objectives": [
+        {
+          "id": "d8139244-080d-4be3-be43-fc9205f9e664",
+          "text": "we gotta figure out better scaling",
+          "completed": false
+        }
+      ],
+      "chainId": "71c01d3a-6fe1-4c93-bf17-bbcae984950e",
+      "id": "8796ec52-eac7-46eb-b344-3a19e5bef3a4",
+      "completed": false,
+      "xp": 10,
+      "createdAt": "2025-04-13T16:48:10.456Z"
+    },
+    {
+      "text": "youtube tracking",
+      "dueDate": null,
+      "difficulty": 1.5,
+      "value": 2,
+      "questType": "side",
+      "objectives": [
+        {
+          "id": "35dafd14-bd2b-4c42-a0fd-2a58570d6855",
+          "text": "add tracking of youtube activity",
+          "completed": false
+        }
+      ],
+      "chainId": "e45d21b8-64bf-4554-94cd-aa2ba8a28cf5",
+      "id": "e6f26a6f-7892-4946-8047-0e57da1360c7",
+      "completed": false,
+      "xp": 10,
+      "createdAt": "2025-04-13T16:54:46.188Z"
+    },
+    {
+      "text": "music tracking",
+      "dueDate": null,
+      "difficulty": 2,
+      "value": 4,
+      "questType": "side",
+      "objectives": [
+        {
+          "id": "e59f857c-42c1-4fcb-80f3-4bde2d179909",
+          "text": "add old music library (index)",
+          "completed": false
+        }
+      ],
+      "chainId": "e45d21b8-64bf-4554-94cd-aa2ba8a28cf5",
+      "id": "ab119f51-1dc9-499c-9a9a-a54583013fa8",
+      "completed": false,
+      "xp": 10,
+      "createdAt": "2025-04-13T16:58:23.248Z"
     }
   ],
   "questChains": [
@@ -519,13 +576,107 @@
       "value": 4,
       "createdAt": "2025-04-13T03:23:34.727Z",
       "dueDate": null
+    },
+    {
+      "id": "e45d21b8-64bf-4554-94cd-aa2ba8a28cf5",
+      "name": "Obsidian PKM",
+      "difficulty": 2.5,
+      "value": 4,
+      "createdAt": "2025-04-13T16:52:38.912Z",
+      "dueDate": null
     }
   ],
   "character": {
     "level": 1,
     "title": "Novice Adventurer",
-    "avatar": "mario",
+    "avatar": "squirtle",
     "progress": 0,
     "createdAt": "2025-04-12T12:00:00.000Z"
-  }
+  },
+  "ideas": [
+    {
+      "name": "historical context bot",
+      "description": "we forget history often, its hard to keep in our front of mind, AI?",
+      "id": "5a0193c7-d05a-4d1b-8483-e2b43cac04ca",
+      "createdAt": "2025-04-13T16:40:14.189Z"
+    },
+    {
+      "name": "personal aesthetic",
+      "description": "train bot on personal aesthetic to crawl for products that fit me",
+      "id": "b08f7c80-f8c2-45dd-af78-a3b4af319649",
+      "createdAt": "2025-04-13T16:40:51.821Z"
+    },
+    {
+      "name": "the remembral",
+      "description": "a happy place where we put memories and things that make us happy for quick reference",
+      "id": "5b1ba981-7700-47ee-9439-4daa3067327b",
+      "createdAt": "2025-04-13T16:41:11.937Z"
+    },
+    {
+      "name": "overworld simulator",
+      "description": "a creator for overworlds",
+      "id": "3bd1b123-890a-49be-a2ae-0385e67cfddb",
+      "createdAt": "2025-04-13T16:41:29.512Z"
+    },
+    {
+      "name": "cooking instructions",
+      "description": "infer cooking instructions or find online quickly",
+      "id": "28ef5e22-6d53-4c21-a7ad-e3838a6dcd2d",
+      "createdAt": "2025-04-13T16:42:04.678Z"
+    },
+    {
+      "name": "lemmings/falling sand",
+      "description": "music viz + vst concepts",
+      "id": "c884f9a3-c5ee-48f4-9329-6218e1c32912",
+      "createdAt": "2025-04-13T16:42:57.545Z"
+    },
+    {
+      "name": "AI/Simulation Games",
+      "description": "Visualizations, Simulations, etc (think alchemy, lemmings, line rider, flash games)",
+      "id": "e61ce0fe-5dde-43e2-9236-964ddd2d301a",
+      "createdAt": "2025-04-13T16:43:36.560Z"
+    },
+    {
+      "name": "1v1 or 3v1 text based AI games",
+      "description": "who knows?",
+      "id": "c42b93f9-c7c6-47b0-8cb4-cc7749055a30",
+      "createdAt": "2025-04-13T16:44:20.716Z"
+    },
+    {
+      "name": "time capsule",
+      "description": "sort of along the lines of The Remembral",
+      "id": "e59c9914-88ab-4a55-adb3-c3e07b7105e5",
+      "createdAt": "2025-04-13T16:44:40.556Z"
+    },
+    {
+      "name": "make music page more vg bgx style",
+      "description": "Music Debug Mode etc",
+      "id": "23276f1f-341a-434c-b731-b46a56f4bcee",
+      "createdAt": "2025-04-13T16:45:20.674Z"
+    },
+    {
+      "name": "fake ad detector",
+      "description": "if they pop up, know they're real",
+      "id": "529d8991-6f56-4463-a69a-a072ec71ecc1",
+      "createdAt": "2025-04-13T16:45:56.953Z"
+    },
+    {
+      "name": "raspberri pi dj prod hardware",
+      "description": "to match TUI sonic pi research",
+      "id": "e09c3cb5-6a22-4c25-a56b-b92ca73686c2",
+      "createdAt": "2025-04-13T16:46:31.118Z"
+    },
+    {
+      "name": "long live terry davis",
+      "description": "learn more",
+      "id": "05dc7366-fd5e-466d-9c53-7d08ec256330",
+      "createdAt": "2025-04-13T16:46:46.934Z"
+    },
+    {
+      "name": "i like car boys",
+      "description": "until the remembral this is the remembral",
+      "id": "6c3d1b04-dd98-4065-9f85-642b2be9c6b5",
+      "createdAt": "2025-04-13T17:00:22.669Z"
+    }
+  ]
 }
