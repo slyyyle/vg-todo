@@ -161,7 +161,7 @@ function QuestChainManager({
       <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
         <DialogContent 
           className={cn(
-            "!rounded-none max-w-[600px] w-[90vw] p-0 shadow-lg",
+            "!rounded-none max-w-[700px] w-[80vw] lg:w-[40vw] p-0 shadow-lg",
             "bg-[var(--background)] border-4",
             "border-[var(--foreground)]",
             "is-dark"
@@ -294,11 +294,11 @@ function QuestChainManager({
                 {questChains.map((chain) => (
                   <li
                     key={chain.id}
-                        className="nes-container is-dark with-title !p-3"
+                    className="nes-container is-dark with-title !p-0"
                     data-testid={`chain-item-${chain.id}`}
                   >
                     {editingId === chain.id ? (
-                          <div className="space-y-3">
+                          <div className="space-y-3 p-3">
                             <div className="nes-field">
                               <label htmlFor={`edit-chain-name-${chain.id}`} className="nes-text is-disabled text-xs">Name</label>
                         <input
@@ -366,12 +366,13 @@ function QuestChainManager({
                         </div>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="title !text-base !-mt-6 !mb-1">{chain.name}</p>
-                              <div className="flex items-center space-x-4 text-xs">
+                          <>
+                          <p className="title">{chain.name}</p>
+                          <div className="flex items-center justify-between p-3">
+                            <div className="flex-grow min-w-0">
+                              <div className="flex items-center space-x-4 text-sm mb-2">
                                 <div className="flex items-center">
-                                  <span className="nes-text is-disabled mr-1">Diff:</span>
+                                  <span className="nes-text is-disabled text-xs">Diff:</span>
                                   {[1, 2, 3, 4].map((starIndex) => {
                                     const isFull = (chain.difficulty ?? 0) >= starIndex;
                                     const isHalf = (chain.difficulty ?? 0) >= starIndex - 0.5 && (chain.difficulty ?? 0) < starIndex;
@@ -386,7 +387,7 @@ function QuestChainManager({
                                   })}
                                 </div>
                                 <div className="flex items-center">
-                                  <span className="nes-text is-disabled mr-1">Val:</span>
+                                  <span className="nes-text is-disabled text-xs">Val:</span>
                                   {[...Array(chain.value ?? 0)].map((_, i) => (
                                     <i key={`disp-coin-${i}`} className={`nes-icon coin is-small${i > 0 ? ' ml-px' : ''}`}></i>
                                   ))}
@@ -394,6 +395,22 @@ function QuestChainManager({
                                     <i key={`disp-placeholder-${i}`} className={`nes-icon coin is-small opacity-25${i > 0 || (chain.value ?? 0) > 0 ? ' ml-px' : ''}`}></i>
                                   ))}
                                 </div>
+                              </div>
+                              {/* Created Date Display (NEW) */}
+                              {chain.createdAt && (
+                                <div className="text-xs nes-text is-disabled mt-1">
+                                  Created: {format(new Date(chain.createdAt), "MMM d, yyyy")}
+                                </div>
+                              )}
+                              {/* Always display Due Date line */}
+                              <div className={cn(
+                                "text-xs",
+                                chain.dueDate ? "nes-text is-disabled" : "nes-text is-success",
+                                "mt-2"
+                              )}>
+                                Due Date: {chain.dueDate 
+                                  ? format(new Date(chain.dueDate), "MMM d, yyyy") 
+                                  : "Free Play!"}
                               </div>
                             </div>
                             <div className="flex space-x-1">
@@ -415,6 +432,7 @@ function QuestChainManager({
                           </button>
                         </div>
                           </div>
+                        </>
                     )}
                   </li>
                 ))}
