@@ -192,8 +192,6 @@ export default function Home() {
         return quest.chainId !== undefined && quest.chainId !== '';
       case "side":
         return quest.chainId === undefined || quest.chainId === '';
-      case "extra":
-        return quest.questType === "extra"
       default:
         return true
     }
@@ -553,9 +551,6 @@ export default function Home() {
                         </option>
                         <option value="side" className="nes-text is-black">
                           Side Quests
-                        </option>
-                        <option value="extra" className="nes-text is-black">
-                          Extra Quests
                         </option>
                       </select>
                     </div>

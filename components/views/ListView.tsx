@@ -48,6 +48,29 @@ function formatDuration(ms: number): string {
 function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, onToggleObjective, characterCreatedAt }: ListViewProps) {
   const { ref } = useSourceInfo("ListView", "components/views/ListView.tsx")
 
+  /* ADD START */
+  // --- Determine ALL chains to display (Moved Up for Initial State) --- 
+  const chainDataMapForInitial = new Map<string, QuestChain>();
+  questChains.forEach(chain => {
+      chainDataMapForInitial.set(chain.id, chain);
+  });
+  let hasSideQuestsInitial = false;
+  todos.forEach(quest => {
+      if (!quest.chainId) hasSideQuestsInitial = true;
+  });
+  const initialChainIds = new Set<string>(questChains.map(chain => chain.id));
+  if (hasSideQuestsInitial) {
+      initialChainIds.add('side-quests');
+  }
+  const initialSortedChainIds = Array.from(initialChainIds).sort((a, b) => {
+    if (a === 'side-quests') return -1;
+    if (b === 'side-quests') return 1;
+    const nameA = chainDataMapForInitial.get(a)?.name ?? '';
+    const nameB = chainDataMapForInitial.get(b)?.name ?? '';
+    return nameA.localeCompare(nameB);
+  });
+  /* ADD END */
+
   // State for adding new objectives directly from the list
   const [newObjectiveTexts, setNewObjectiveTexts] = useState<Record<string, string>>({})
   const [showAddObjective, setShowAddObjective] = useState<Record<string, boolean>>({})
@@ -63,6 +86,15 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
 
   // State for the elapsed time string
   const [elapsedTimeString, setElapsedTimeString] = useState<string>("...");
+
+  /* ADD START */
+  // State to track collapsed chains { [chainId]: boolean } - Initialized with default
+  const [collapsedChains, setCollapsedChains] = useState<Record<string, boolean>>(() => {
+    const state: Record<string, boolean> = {};
+    initialSortedChainIds.forEach(id => { state[id] = true; });
+    return state;
+  });
+  /* ADD END */
 
   // Effect to detect completion changes and show dialog
   useEffect(() => {
@@ -228,29 +260,45 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
     todosByChain[chainId].todos.push(quest);
   });
 
+  // --- Delete the moved calculation logic --- 
+  /* DELETE START */
   // --- Determine ALL chains to display --- (NEW LOGIC)
-  const allChainIds = new Set<string>(questChains.map(chain => chain.id));
-  if (hasSideQuests) {
-    allChainIds.add('side-quests');
-  }
+  // const allChainIds = new Set<string>(questChains.map(chain => chain.id));
+  // if (hasSideQuests) {
+  //   allChainIds.add('side-quests');
+  // }
 
   // --- Sort ALL chain IDs --- (NEW LOGIC)
-  const sortedDisplayChainIds = Array.from(allChainIds).sort((a, b) => {
-    if (a === 'side-quests') return -1;
-    if (b === 'side-quests') return 1;
-    // Use chainDataMap for sorting by name
-    const nameA = chainDataMap.get(a)?.name ?? '';
-    const nameB = chainDataMap.get(b)?.name ?? '';
-    return nameA.localeCompare(nameB);
-  });
+  // const sortedDisplayChainIds = Array.from(allChainIds).sort((a, b) => {
+  //   if (a === 'side-quests') return -1;
+  //   if (b === 'side-quests') return 1;
+  //   // Use chainDataMap for sorting by name
+  //   const nameA = chainDataMap.get(a)?.name ?? '';
+  //   const nameB = chainDataMap.get(b)?.name ?? '';
+  //   return nameA.localeCompare(nameB);
+  // });
   // --- End Sorting --- 
+  /* DELETE END */
+
+  /* DELETE START */
+  // Use the pre-calculated sorted IDs
+  // const sortedDisplayChainIds = initialSortedChainIds;
+  /* DELETE END */
 
   const todayStart = startOfDay(new Date());
+
+  // Handler to toggle the collapsed state for a specific chain
+  const toggleChainCollapse = (chainId: string) => {
+    setCollapsedChains(prev => ({
+      ...prev,
+      [chainId]: !prev[chainId] // Toggle the boolean value
+    }));
+  };
 
   return (
     <div ref={ref} data-testid="list-view" className="space-y-4">
       {/* Render each chain group (using sortedDisplayChainIds) */}
-      {sortedDisplayChainIds.map(chainId => {
+      {initialSortedChainIds.map(chainId => {
         // Find chainData using the map
         const chainData = chainId === 'side-quests' ? undefined : chainDataMap.get(chainId);
         // Get todos for this chain (might be undefined or empty)
@@ -299,6 +347,17 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
               {chainName !== 'Side Quests' ? 'Chain: ' : ''}
               {chainName}
             </p>
+
+            {/* Placeholder Button - Now toggles collapse state */}
+            <div className="text-right -mt-2 mb-2"> 
+              <button 
+                type="button" 
+                className="nes-btn is-primary is-small"
+                onClick={() => toggleChainCollapse(chainId)}
+              >
+                {collapsedChains[chainId] ? "Show Quests" : "Hide Quests"}
+              </button>
+            </div>
 
             {/* Chain Info Pane (Renders based on chainData OR if totalQuests > 0) */}
             { (totalQuests > 0 || (chainData && ( (chainData.difficulty !== undefined && chainData.difficulty !== null) || (chainData.value !== undefined && chainData.value !== null && chainData.value > 0) || chainData.createdAt || chainData.dueDate ))) && (
@@ -383,175 +442,178 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
             )}
             {/* --- End Chain Info Pane --- */}
 
-            <div className="space-y-2">
-              {/* Conditionally render todos OR an empty state message */}
-              {chainTodos.length > 0 ? (
-                chainTodos.map((todo, index) => {
-                  // --- Determine Due Date Class --- 
-                  let dueDateClass = "nes-text is-disabled"; // Default
-                  if (todo.completed) {
-                    dueDateClass = "nes-text is-success line-through";
-                  } else if (todo.dueDate) {
-                    const dueDateStart = startOfDay(todo.dueDate); // Ensure comparing day only
-                    if (isPast(dueDateStart) && !isToday(dueDateStart)) { // isPast includes today
-                      dueDateClass = "nes-text is-error"; // Overdue
-                    } else if (isToday(dueDateStart)) {
-                      dueDateClass = "nes-text is-warning"; // Due today
+            {/* Conditionally render quest list based on collapsed state */}
+            {!collapsedChains[chainId] && (
+              <div className="space-y-2">
+                {/* Conditionally render todos OR an empty state message */}
+                {chainTodos.length > 0 ? (
+                  chainTodos.map((todo, index) => {
+                    // --- Determine Due Date Class --- 
+                    let dueDateClass = "nes-text is-disabled"; // Default
+                    if (todo.completed) {
+                      dueDateClass = "nes-text is-success line-through";
+                    } else if (todo.dueDate) {
+                      const dueDateStart = startOfDay(todo.dueDate); // Ensure comparing day only
+                      if (isPast(dueDateStart) && !isToday(dueDateStart)) { // isPast includes today
+                        dueDateClass = "nes-text is-error"; // Overdue
+                      } else if (isToday(dueDateStart)) {
+                        dueDateClass = "nes-text is-warning"; // Due today
+                      }
+                      // If future, keep default is-disabled
                     }
-                    // If future, keep default is-disabled
-                  }
-                  
-                  // --- Determine Created At Class --- (NEW)
-                  let createdAtClass = "nes-text is-disabled"; // Default
-                  if (todo.completed) {
-                     createdAtClass = "nes-text is-success line-through";
-                  } else {
-                     // If not completed, check if due date exists
-                     if (todo.dueDate) {
-                         // Mirror the due date's calculated class
-                         createdAtClass = dueDateClass; 
-                     } else {
-                         // No due date, keep it disabled
-                         createdAtClass = "nes-text is-disabled";
-                     }
-                  }
-                  // --- End Determine Classes --- 
-
-                  // --- Calculate Relative Due Date String ---
-                  let dayDiffString = "";
-                  if (todo.dueDate) {
-                    const today = startOfDay(new Date());
-                    const dueDateStart = startOfDay(todo.dueDate);
-                    const diff = differenceInCalendarDays(dueDateStart, today);
-
-                    if (diff < 0) {
-                      dayDiffString = ` (${Math.abs(diff)} days ago)`;
-                    } else if (diff === 0) {
-                      dayDiffString = ` (Today)`;
+                    
+                    // --- Determine Created At Class --- (NEW)
+                    let createdAtClass = "nes-text is-disabled"; // Default
+                    if (todo.completed) {
+                       createdAtClass = "nes-text is-success line-through";
                     } else {
-                      dayDiffString = ` (in ${diff} days)`;
+                       // If not completed, check if due date exists
+                       if (todo.dueDate) {
+                           // Mirror the due date's calculated class
+                           createdAtClass = dueDateClass; 
+                       } else {
+                           // No due date, keep it disabled
+                           createdAtClass = "nes-text is-disabled";
+                       }
                     }
-                  }
-                  // --- End Calculate Relative Due Date String ---
+                    // --- End Determine Classes --- 
 
-                  return (
-                    <div
-                      key={todo.id}
-                      className={`relative p-3 border-b border-zinc-600 bg-zinc-600 group ${todo.completed ? "bg-opacity-40 bg-gray-800" : ""}`}
-                    >
-                      {/* --- Start: Individual Todo Rendering --- */}
-                      <div className="flex justify-between items-start">
-                         {/* Quest checkbox and text */}
-                         <div className="flex items-center">
-                           <label>
-                             <input
-                               type="checkbox"
-                               className="nes-checkbox is-dark"
-                               checked={todo.completed}
-                               onChange={() => handleToggleTodo(todo.id)}
-                             />
-                             <span className={`ml-2 ${todo.completed ? "nes-text is-success" : "nes-text is-white"}`}>{todo.text}</span>
-                           </label>
-                         </div>
+                    // --- Calculate Relative Due Date String ---
+                    let dayDiffString = "";
+                    if (todo.dueDate) {
+                      const today = startOfDay(new Date());
+                      const dueDateStart = startOfDay(todo.dueDate);
+                      const diff = differenceInCalendarDays(dueDateStart, today);
+
+                      if (diff < 0) {
+                        dayDiffString = ` (${Math.abs(diff)} days ago)`;
+                      } else if (diff === 0) {
+                        dayDiffString = ` (Today)`;
+                      } else {
+                        dayDiffString = ` (in ${diff} days)`;
+                      }
+                    }
+                    // --- End Calculate Relative Due Date String ---
+
+                    return (
+                      <div
+                        key={todo.id}
+                        className={`relative p-3 border-b border-zinc-600 bg-zinc-600 group ${todo.completed ? "bg-opacity-40 bg-gray-800" : ""}`}
+                      >
+                        {/* --- Start: Individual Todo Rendering --- */}
+                        <div className="flex justify-between items-start">
+                           {/* Quest checkbox and text */}
+                           <div className="flex items-center">
+                             <label>
+                               <input
+                                 type="checkbox"
+                                 className="nes-checkbox is-dark"
+                                 checked={todo.completed}
+                                 onChange={() => handleToggleTodo(todo.id)}
+                               />
+                               <span className={`ml-2 ${todo.completed ? "nes-text is-success" : "nes-text is-white"}`}>{todo.text}</span>
+                             </label>
+                           </div>
+                        </div>
+                        {/* Objectives Section */}
+                        <div className="mt-2 ml-8">
+                           <div className="flex justify-between items-end text-xs mb-1">
+                              <span className="nes-text is-primary">
+                                 {todo.objectives.length === 0
+                                    ? `Objectives: ${todo.completed ? 1 : 0}/1`
+                                    : `Objectives: ${todo.objectives.filter((obj) => obj.completed).length}/${todo.objectives.length}`}
+                              </span>
+                              <div className="flex items-end space-x-2">
+                                 {/* New container for STACKING Stars and Coins */}
+                                 <div className="flex flex-col items-start space-y-1 mr-1">
+                                    {/* Difficulty Stars (Moved Here) */}
+                                    <div className="flex items-center">
+                                      {[1, 2, 3, 4].map(starIndex => (
+                                        <i key={starIndex} className={cn(
+                                          "nes-icon is-small star",
+                                          { "is-half": (todo.difficulty ?? 0) >= starIndex - 0.5 && (todo.difficulty ?? 0) < starIndex },
+                                          { "is-empty": (todo.difficulty ?? 0) < starIndex - 0.5 },
+                                          starIndex > 1 ? "ml-px" : ""
+                                        )}></i>
+                                      ))}
+                                    </div>
+                                    {/* Value Coins (Moved Here) */}
+                                    <div className="flex items-center">
+                                      {[...Array(todo.value ?? 0)].map((_, i) => (
+                                        <i key={`coin-${i}`} className={`nes-icon coin is-small${i > 0 ? ' ml-px' : ''}`}></i>
+                                      ))}
+                                    </div>
+                                 </div>
+                                 {/* Buttons - Ensure they are here */}
+                                 <button className="nes-btn is-primary is-small" onClick={() => onEditTodo(todo)}>
+                                    <Edit className="h-4 w-4" />
+                                 </button>
+                                 <button className="nes-btn is-error is-small" onClick={() => handleDeleteClick(todo.id)}>
+                                    <Trash className="h-4 w-4" />
+                                 </button>
+                              </div>
+                           </div>
+                           <progress
+                              // Conditional Progress Bar Value & Class
+                              className={`nes-progress ${todo.objectives.length === 0
+                                    ? getProgressBarClass(todo.completed ? 100 : 0)
+                                    : getProgressBarClass(getObjectiveProgress(todo.objectives))}`}
+                              value={todo.objectives.length === 0
+                                    ? (todo.completed ? 100 : 0)
+                                    : getObjectiveProgress(todo.objectives)}
+                              max="100"
+                           ></progress>
+                           {/* Objective List */}
+                           {todo.objectives.length > 0 && (
+                              <ul className="mt-1 space-y-1">
+                                 {todo.objectives.map((objective) => (
+                                    <li key={objective.id} className="flex items-center">
+                                       <label>
+                                          <input type="checkbox" className="nes-checkbox is-dark" checked={objective.completed} onChange={() => onToggleObjective(todo.id, objective.id)} />
+                                          <span className={`ml-2 text-xs ${objective.completed ? "nes-text is-success" : "nes-text is-white"}`}>{objective.text}</span>
+                                       </label>
+                                    </li>
+                                 ))}
+                              </ul>
+                           )}
+                        </div>
+                        {/* --- End: Individual Todo Rendering --- */}
+                        
+                        {/* Timestamp Container */}
+                        <div className="flex justify-center items-baseline mt-2 text-[0.65rem]">
+                          {/* Created At - Apply NEW conditional class */}
+                          <span className={cn("", createdAtClass)}> 
+                            Created: {format(todo.createdAt, "MMM d, yyyy")}
+                          </span>
+                          <span className="nes-text is-disabled mx-2">|</span>
+                          {/* Due Date - Uses its own conditional class */}
+                          <span className={cn("", dueDateClass)}> 
+                            {/* Conditionally render OVERDUE prefix */}
+                            {!todo.completed && todo.dueDate && isPast(startOfDay(todo.dueDate)) && !isToday(startOfDay(todo.dueDate))
+                              ? `OVERDUE: ${format(todo.dueDate, "MMM d, yyyy")}`
+                              : (todo.dueDate ? `Due: ${format(todo.dueDate, "MMM d, yyyy")}` : "No Due Date")
+                            }
+                            {/* Append the relative day difference */}
+                            {!todo.completed && todo.dueDate ? dayDiffString : ""}
+                          </span>
+                          {/* Completed At */}
+                          {todo.completed && todo.completedAt && (
+                            <>
+                              <span className="nes-text is-disabled mx-2">|</span>
+                              <span className="nes-text is-success"> 
+                                Completed: {format(todo.completedAt, "MMM d, yyyy")}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      {/* Objectives Section */}
-                      <div className="mt-2 ml-8">
-                         <div className="flex justify-between items-end text-xs mb-1">
-                            <span className="nes-text is-primary">
-                               {todo.objectives.length === 0
-                                  ? `Objectives: ${todo.completed ? 1 : 0}/1`
-                                  : `Objectives: ${todo.objectives.filter((obj) => obj.completed).length}/${todo.objectives.length}`}
-                            </span>
-                            <div className="flex items-end space-x-2">
-                               {/* New container for STACKING Stars and Coins */}
-                               <div className="flex flex-col items-start space-y-1 mr-1">
-                                  {/* Difficulty Stars (Moved Here) */}
-                                  <div className="flex items-center">
-                                    {[1, 2, 3, 4].map(starIndex => (
-                                      <i key={starIndex} className={cn(
-                                        "nes-icon is-small star",
-                                        { "is-half": (todo.difficulty ?? 0) >= starIndex - 0.5 && (todo.difficulty ?? 0) < starIndex },
-                                        { "is-empty": (todo.difficulty ?? 0) < starIndex - 0.5 },
-                                        starIndex > 1 ? "ml-px" : ""
-                                      )}></i>
-                                    ))}
-                                  </div>
-                                  {/* Value Coins (Moved Here) */}
-                                  <div className="flex items-center">
-                                    {[...Array(todo.value ?? 0)].map((_, i) => (
-                                      <i key={`coin-${i}`} className={`nes-icon coin is-small${i > 0 ? ' ml-px' : ''}`}></i>
-                                    ))}
-                                  </div>
-                               </div>
-                               {/* Buttons - Ensure they are here */}
-                               <button className="nes-btn is-primary is-small" onClick={() => onEditTodo(todo)}>
-                                  <Edit className="h-4 w-4" />
-                               </button>
-                               <button className="nes-btn is-error is-small" onClick={() => handleDeleteClick(todo.id)}>
-                                  <Trash className="h-4 w-4" />
-                               </button>
-                            </div>
-                         </div>
-                         <progress
-                            // Conditional Progress Bar Value & Class
-                            className={`nes-progress ${todo.objectives.length === 0
-                                  ? getProgressBarClass(todo.completed ? 100 : 0)
-                                  : getProgressBarClass(getObjectiveProgress(todo.objectives))}`}
-                            value={todo.objectives.length === 0
-                                  ? (todo.completed ? 100 : 0)
-                                  : getObjectiveProgress(todo.objectives)}
-                            max="100"
-                         ></progress>
-                         {/* Objective List */}
-                         {todo.objectives.length > 0 && (
-                            <ul className="mt-1 space-y-1">
-                               {todo.objectives.map((objective) => (
-                                  <li key={objective.id} className="flex items-center">
-                                     <label>
-                                        <input type="checkbox" className="nes-checkbox is-dark" checked={objective.completed} onChange={() => onToggleObjective(todo.id, objective.id)} />
-                                        <span className={`ml-2 text-xs ${objective.completed ? "nes-text is-success" : "nes-text is-white"}`}>{objective.text}</span>
-                                     </label>
-                                  </li>
-                               ))}
-                            </ul>
-                         )}
-                      </div>
-                      {/* --- End: Individual Todo Rendering --- */}
-                      
-                      {/* Timestamp Container */}
-                      <div className="flex justify-center items-baseline mt-2 text-[0.65rem]">
-                        {/* Created At - Apply NEW conditional class */}
-                        <span className={cn("", createdAtClass)}> 
-                          Created: {format(todo.createdAt, "MMM d, yyyy")}
-                        </span>
-                        <span className="nes-text is-disabled mx-2">|</span>
-                        {/* Due Date - Uses its own conditional class */}
-                        <span className={cn("", dueDateClass)}> 
-                          {/* Conditionally render OVERDUE prefix */}
-                          {!todo.completed && todo.dueDate && isPast(startOfDay(todo.dueDate)) && !isToday(startOfDay(todo.dueDate))
-                            ? `OVERDUE: ${format(todo.dueDate, "MMM d, yyyy")}`
-                            : (todo.dueDate ? `Due: ${format(todo.dueDate, "MMM d, yyyy")}` : "No Due Date")
-                          }
-                          {/* Append the relative day difference */}
-                          {!todo.completed && todo.dueDate ? dayDiffString : ""}
-                        </span>
-                        {/* Completed At */}
-                        {todo.completed && todo.completedAt && (
-                          <>
-                            <span className="nes-text is-disabled mx-2">|</span>
-                            <span className="nes-text is-success"> 
-                              Completed: {format(todo.completedAt, "MMM d, yyyy")}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })
-              ) : (
-                <p className="text-center text-sm nes-text is-disabled p-4">No quests in this chain yet.</p>
-              )}
-            </div>
+                    )
+                  })
+                ) : (
+                  <p className="text-center text-sm nes-text is-disabled p-4">No quests in this chain yet.</p>
+                )}
+              </div>
+            )}
           </div>
         )
       })}

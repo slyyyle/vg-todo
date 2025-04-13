@@ -39,7 +39,7 @@ export interface Character {
 export type ViewType = "list" | "grid" | "ideas"
 
 export type SortOption = "difficulty" | "dueDate" | "questType" | "createdAt" | "completedAt" | "updatedAt"
-export type FilterOption = "all" | "completed" | "active" | "chained" | "side" | "extra"
+export type FilterOption = "all" | "completed" | "active" | "chained" | "side"
 
 export interface Idea {
   id: string;
