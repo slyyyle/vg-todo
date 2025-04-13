@@ -21,7 +21,7 @@ const defaultData: AppData = {
         level: 1,
         title: "Novice Adventurer",
         avatar: "hero",
-        progress: 0,
+        totalXp: 0, // Added totalXp default
         createdAt: null // Default to null
     },
     ideas: [] // Initialize ideas as empty

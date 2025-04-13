@@ -98,7 +98,8 @@
       "id": "7120ce73-f599-4692-924b-c6fe0e8f1c81",
       "completed": false,
       "xp": 10,
-      "createdAt": "2025-04-13T02:33:06.007Z"
+      "createdAt": "2025-04-13T02:33:06.007Z",
+      "completedAt": null
     },
     {
       "text": "youtube detach",
@@ -590,8 +591,8 @@
   "character": {
     "level": 1,
     "title": "Novice Adventurer",
-    "avatar": "squirtle",
-    "progress": 0,
+    "avatar": "mario",
+    "totalXp": 0,
     "createdAt": "2025-04-12T12:00:00.000Z"
   },
   "ideas": [

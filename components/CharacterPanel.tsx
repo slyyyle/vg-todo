@@ -1,5 +1,6 @@
 import type { Character } from "@/app/types"
 import { withSourceInfo, useSourceInfo } from "@/components/withSourceInfo"
+import { getTotalXpForLevel } from "@/app/utils/xpUtils"
 
 // Define the list of available avatar keys
 const AVAILABLE_AVATARS = [
@@ -78,8 +79,22 @@ function CharacterPanel({ character, onAvatarChange }: CharacterPanelProps) {
     onAvatarChange(AVAILABLE_AVATARS[nextIndex]);
   };
 
-  // Use progress from props or default to 0
-  const progress = character.progress || 0
+  // Calculate progress based on total XP
+  const currentLevel = character.level;
+  const totalXp = character.totalXp;
+  const xpForCurrentLevelStart = getTotalXpForLevel(currentLevel);
+  const xpForNextLevelStart = getTotalXpForLevel(currentLevel + 1);
+  const xpNeededThisLevel = xpForNextLevelStart - xpForCurrentLevelStart;
+  const xpInCurrentLevel = totalXp - xpForCurrentLevelStart;
+  
+  let progress = 0;
+  if (xpNeededThisLevel > 0) {
+    progress = Math.floor((xpInCurrentLevel / xpNeededThisLevel) * 100);
+  } else if (totalXp >= xpForCurrentLevelStart) {
+    // If XP needed is 0 (maybe max level?), show 100% if XP meets/exceeds current level start
+    progress = 100; 
+  }
+  progress = Math.max(0, Math.min(100, progress)); // Clamp 0-100
 
   return (
     <div ref={ref} className="nes-container is-dark with-title h-96" data-testid="character-panel">
@@ -97,20 +112,33 @@ function CharacterPanel({ character, onAvatarChange }: CharacterPanelProps) {
         </div>
 
         {/* Just the character name now */}
-        <h2 className="nes-text is-primary text-center mb-1" data-testid="character-name">
+        <h2 className="nes-text is-primary text-center mb-6" data-testid="character-name">
           {characterName}
         </h2>
 
-        <h3 className="nes-text text-center mb-4" data-testid="character-title">
-          {character.title}
-        </h3>
+        {/* Container for Level/Title and Progress Bar */}
         <div className="w-full mb-2">
-          <label data-testid="character-level" className="nes-text is-primary">
-            Level {character.level}
-          </label>
-          <progress className={`nes-progress ${getProgressBarClass(progress)}`} value={progress} max="100"></progress>
+          {/* Combined Level and Title Line */}
+          <div>
+            <label data-testid="character-level" className="nes-text is-primary">
+              Level {character.level}
+            </label>
+            <span className="nes-text is-white ml-4">Adventurer</span>
+          </div>
+          <progress 
+             className={`nes-progress ${getProgressBarClass(progress)}`} 
+             value={progress}
+             max="100"
+          ></progress>
+          {/* XP Text Display (NEW) */}
+          <p className="text-xs text-center mt-1 nes-text is-disabled" data-testid="character-xp-display">
+            {/* Show XP only if needed for next level is greater than 0 */}
+            {xpNeededThisLevel > 0 
+              ? `XP: ${xpInCurrentLevel} / ${xpNeededThisLevel}`
+              : "XP: MAX"}
+          </p>
         </div>
-        <p className="text-xs mt-2 text-center nes-text is-error">Complete quests to level up your character!</p>
+        <p className="text-xs mt-1 text-center nes-text is-error">Complete quests to level up your character!</p>
       </div>
     </div>
   )

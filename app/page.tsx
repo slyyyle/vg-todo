@@ -28,6 +28,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog" // Import Alert Dialog components
 import { cn } from '@/lib/utils'; // Ensure cn is imported if not already
+import ReactConfetti from 'react-confetti'; // Import Confetti
+import { useWindowSize } from 'react-use'; // Import hook for window size
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog" // Import Dialog components
+
+// Import XP utility functions
+import { getXpForNextLevel, getTotalXpForLevel, getLevelFromXp } from "./utils/xpUtils";
 
 // Import the debug utilities
 import { exposeDebugUtils } from "./utils/debugUtils"
@@ -48,7 +61,7 @@ export default function Home() {
     level: 1,
     title: "Novice Adventurer",
     avatar: "hero",
-    progress: 0, // Start progress at 0
+    totalXp: 0, // Start total XP at 0
     createdAt: defaultCharacterCreationDate // Initialize with default date
   })
   const [currentView, setCurrentView] = useState<ViewType>("list")
@@ -64,6 +77,16 @@ export default function Home() {
   const [editingIdea, setEditingIdea] = useState<Idea | null>(null); // State for editing idea
   const [deletingIdeaId, setDeletingIdeaId] = useState<string | null>(null); // State for deleting idea ID
   const [isIdeaDeleteConfirmOpen, setIsIdeaDeleteConfirmOpen] = useState(false); // State for delete confirm dialog
+
+  // State for Level Up Celebration
+  const [showLevelUpDialog, setShowLevelUpDialog] = useState(false);
+  const [levelReached, setLevelReached] = useState<number>(0);
+
+  // State to delay Level Up dialog until Quest Complete dialog closes
+  const [pendingLevelUpInfo, setPendingLevelUpInfo] = useState<{ level: number } | null>(null);
+
+  // Get window size for confetti
+  const { width, height } = useWindowSize();
 
   // Load data from file using Server Action on initial mount
   useEffect(() => {
@@ -98,21 +121,62 @@ export default function Home() {
   }
 
   const toggleTodo = (id: string) => {
-    setTodos(
-      todos.map((quest) => { 
-        if (quest.id === id) {
-          const isChecking = !quest.completed; // Check the *new* intended state
-          return {
-            ...quest,
-            completed: isChecking, 
-            // If checking, complete all objectives; if unchecking, clear all objectives
-            objectives: quest.objectives.map((obj) => ({ ...obj, completed: isChecking })),
-            completedAt: isChecking ? new Date() : null, // Set/clear completedAt
-          };
+    let xpGainedFromToggle = 0;
+    let xpLostFromToggle = 0;
+    let levelUpOccurred = false;
+    let levelDownOccurred = false;
+
+    const updatedTodos = todos.map((quest) => {
+      if (quest.id === id) {
+        const isChecking = !quest.completed;
+        const updatedQuest: Quest = {
+          ...quest,
+          completed: isChecking,
+          objectives: quest.objectives.map((obj) => ({ ...obj, completed: isChecking })),
+          completedAt: isChecking ? new Date() : null,
+        };
+
+        const value = updatedQuest.value ?? 0;
+        const difficulty = updatedQuest.difficulty ?? 0;
+        const potentialXp = (value + difficulty) * difficulty;
+
+        if (isChecking) {
+          xpGainedFromToggle = potentialXp;
+        } else if (potentialXp > 0) { // Only track loss if there was potential XP
+          xpLostFromToggle = potentialXp;
         }
-        return quest;
-      }),
-    );
+        return updatedQuest;
+      }
+      return quest;
+    });
+
+    setTodos(updatedTodos);
+
+    if (xpGainedFromToggle > 0 || xpLostFromToggle > 0) {
+      setCharacter(prevCharacter => {
+        const newTotalXp = Math.max(0, prevCharacter.totalXp + xpGainedFromToggle - xpLostFromToggle); // Ensure XP doesn't go below 0
+        const newLevel = getLevelFromXp(newTotalXp);
+
+        // Log level changes & Trigger Dialog
+        if (newLevel > prevCharacter.level) {
+            console.log(`Level Up! Reached level ${newLevel}`);
+            setPendingLevelUpInfo({ level: newLevel }); // <-- Set pending info instead of showing dialog
+            // setLevelReached(newLevel); // Set when showing dialog
+            // setShowLevelUpDialog(true); // Show when quest complete dialog closes
+            // TODO: Trigger level up notification
+        } else if (newLevel < prevCharacter.level) {
+            console.log(`Level Down! Returned to level ${newLevel}`);
+            // TODO: Trigger level down notification
+        }
+
+        return {
+          ...prevCharacter,
+          level: newLevel,
+          totalXp: newTotalXp,
+          // Remove progress, title updates can be based on level
+        };
+      });
+    }
   }
 
   const deleteTodo = (id: string) => {
@@ -336,6 +400,15 @@ export default function Home() {
     setIsIdeaDeleteConfirmOpen(false);
   };
 
+  // --- Callback for when Quest Completion Dialog closes ---
+  const handleCompletionDialogClosed = () => {
+    if (pendingLevelUpInfo) {
+      setLevelReached(pendingLevelUpInfo.level);
+      setShowLevelUpDialog(true);
+      setPendingLevelUpInfo(null); // Clear pending state
+    }
+  };
+
   // Render the appropriate view (conditionally based on loading state)
   const renderCurrentView = () => {
     // Render loading state first
@@ -370,6 +443,7 @@ export default function Home() {
             onToggleObjective={toggleObjective}
             characterCreatedAt={character.createdAt}
             filterLabel={filterLabel}
+            onCompletionDialogClose={handleCompletionDialogClosed}
           />
         )
       case "ideas":
@@ -424,7 +498,7 @@ export default function Home() {
       ...newQuestData,
       id: uuidv4(),
       completed: false,
-      xp: calculateXP(newQuestData),
+      xp: 0, // Set placeholder XP to 0
       createdAt: new Date(), // Set creation timestamp
     };
     addTodo(newQuest);
@@ -438,7 +512,7 @@ export default function Home() {
       const updatedQuest: Quest = {
         ...currentTodo, // Includes original createdAt
         ...updatedQuestData, // Overwrites fields except id, completed, xp, createdAt
-        xp: calculateXP(updatedQuestData), // Recalculate XP if needed
+        xp: currentTodo.xp, // Keep original placeholder XP
       };
       editTodo(updatedQuest);
       setIsQuestDialogOpen(false);
@@ -455,28 +529,31 @@ export default function Home() {
     }
   };
 
-  // Update calculateXP signature to reflect new Omit
-  const calculateXP = (questData: Omit<Quest, "id" | "completed" | "xp" | "createdAt">): number => {
-    // Simplified XP: Flat 10 XP per quest, value and objectives removed for now.
-    let calculatedXp = 10; 
-    
-    // Removed objective bonus calculation:
-    // if (questData.objectives && questData.objectives.length > 0) {
-    //     calculatedXp += questData.objectives.length * 2;
-    // }
-    
-    // Removed value bonus calculation:
-    // const valueBonus = [0, 2, 5, 10, 15];
-    // calculatedXp += valueBonus[questData.value ?? 0]; 
-    
-    // Maybe add difficulty bonus back in as well?
-    // calculatedXp += Math.ceil(questData.difficulty * 1); 
-
-    return calculatedXp;
-  };
+  // Effect to auto-close level up dialog
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (showLevelUpDialog) {
+      timer = setTimeout(() => {
+        setShowLevelUpDialog(false);
+      }, 4000); // Close after 4 seconds
+    }
+    return () => clearTimeout(timer);
+  }, [showLevelUpDialog]);
 
   return (
     <main ref={ref} className="min-h-screen p-4 md:p-8" data-testid="main-page">
+      {/* Confetti Effect */}
+      {showLevelUpDialog && (
+        <ReactConfetti
+          width={width}
+          height={height}
+          recycle={false} // Don't recycle confetti
+          numberOfPieces={300} // Number of confetti pieces
+          tweenDuration={3000} // Duration of animation
+          gravity={0.15} // Gravity effect
+        />
+      )}
+
       <div className="max-w-7xl mx-auto">
         <Header currentView={currentView} onViewChange={handleViewChange} />
 
@@ -638,6 +715,24 @@ export default function Home() {
           </AlertDialogFooter> 
         </AlertDialogContent> 
       </AlertDialog>
+
+      {/* Level Up Dialog */}
+      <Dialog open={showLevelUpDialog} onOpenChange={(open) => !open && setShowLevelUpDialog(false)}>
+        <DialogContent className={cn("nes-dialog is-dark !rounded-none max-w-[450px] w-[90vw]")}>
+          <DialogHeader className="text-center pt-4">
+            <DialogTitle className="nes-text is-success text-2xl mb-4">LEVEL UP!</DialogTitle>
+            <DialogDescription className="nes-text text-lg">
+              Congratulations! You've reached
+              <span className="nes-text is-success text-xl"> Level {levelReached}!</span>
+            </DialogDescription>
+          </DialogHeader>
+          {/* You could add more details here, like unlocked features or stat increases */}
+          <DialogFooter className="flex justify-center pt-4 pb-4">
+            <button className="nes-btn is-primary" onClick={() => setShowLevelUpDialog(false)}>Continue</button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </main>
   )
 }

@@ -32,7 +32,7 @@ export interface Character {
   level: number
   title: string
   avatar: string // URL or identifier for avatar image
-  progress: number // Add this line - progress from 0 to 100
+  totalXp: number // Total cumulative XP earned
   createdAt: Date | null; // Allow null again for error handling
 }
 

@@ -26,6 +26,7 @@ interface ListViewProps {
   onToggleObjective: (todoId: string, objectiveId: string) => void
   characterCreatedAt: Date | null
   filterLabel: string
+  onCompletionDialogClose?: () => void
 }
 
 // Helper function to format duration
@@ -46,7 +47,7 @@ function formatDuration(ms: number): string {
   return `${seconds}s`; // Only seconds if less than a minute
 }
 
-function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, onToggleObjective, characterCreatedAt, filterLabel }: ListViewProps) {
+function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, onToggleObjective, characterCreatedAt, filterLabel, onCompletionDialogClose }: ListViewProps) {
   const { ref } = useSourceInfo("ListView", "components/views/ListView.tsx")
 
   /* ADD START */
@@ -77,6 +78,7 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
   const [showAddObjective, setShowAddObjective] = useState<Record<string, boolean>>({})
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
   const [completedTodoText, setCompletedTodoText] = useState("")
+  const [lastXpGained, setLastXpGained] = useState<number>(0);
 
   const prevTodosRef = useRef<Quest[] | null>(null)
 
@@ -105,6 +107,13 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
         const previousTodo = previousTodos.find(t => t.id === currentTodo.id);
         if (previousTodo && !previousTodo.completed && currentTodo.completed) {
           setCompletedTodoText(currentTodo.text);
+
+          // Calculate XP gained for this specific quest
+          const value = currentTodo.value ?? 0;
+          const difficulty = currentTodo.difficulty ?? 0;
+          const xpGained = (value + difficulty) * difficulty;
+          setLastXpGained(xpGained);
+
           setShowCompletionDialog(true);
         }
       });
@@ -204,13 +213,14 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
 
   const closeCompletionDialog = () => {
     setShowCompletionDialog(false);
+    onCompletionDialogClose?.();
   }
 
   // Effect to auto-close dialog after 3 seconds
   useEffect(() => {
     if (showCompletionDialog) {
       const timer = setTimeout(() => {
-        setShowCompletionDialog(false)
+        closeCompletionDialog();
       }, 3000)
       return () => clearTimeout(timer)
     }
@@ -446,11 +456,25 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
                 
                 {/* Left Column: Use Grid for alignment */}
                 <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 w-1/2 items-center">
-                  {/* Progress Section */}
+                  {/* Progress Section (Modified for Side Quests) */}
                   {totalQuests > 0 && (
                      <>
-                       <span className="nes-text is-disabled">Progress:</span>
-                       <span className="nes-text is-white">{`${completedQuests} / ${totalQuests} (${progressPercent}%)`}</span>
+                      {chainId === 'side-quests' ? (
+                        <>
+                          {/* Active Count for Side Quests */}
+                          <span className="nes-text is-disabled">Active:</span>
+                          <span className="nes-text is-white">{totalQuests - completedQuests}</span>
+                          {/* Completed Count for Side Quests */}
+                          <span className="nes-text is-disabled">Completed:</span>
+                          <span className="nes-text is-white">{completedQuests}</span>
+                        </>
+                      ) : (
+                        <>
+                          {/* Original Progress for Normal Chains */}
+                          <span className="nes-text is-disabled">Progress:</span>
+                          <span className="nes-text is-white">{`${completedQuests} / ${totalQuests} (${progressPercent}%)`}</span>
+                        </>
+                      )}
                      </>
                   )}
                   {/* Created At Section */}
@@ -704,7 +728,7 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
             <DialogDescription className="nes-text is-white">
               You've completed the quest: <span className="nes-text is-success">{completedTodoText}</span>
             </DialogDescription>
-            <p className="mt-4 nes-text is-primary">+10 XP gained!</p>
+            <p className="mt-4 nes-text is-primary">+{lastXpGained} XP gained!</p>
           </DialogHeader>
           <DialogFooter className="p-6 pt-2 flex justify-center">
             <button type="button" className="nes-btn is-primary" onClick={closeCompletionDialog}>
