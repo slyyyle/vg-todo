@@ -225,7 +225,7 @@ function QuestChainManager({
             
             {/* Existing Chains List */}
             {questChains.length > 0 ? (
-              <ul className="space-y-4">
+              <ul className="space-y-4 list-none p-0 m-0">
                 {questChains.map((chain) => (
                   <li
                     key={chain.id}
@@ -300,8 +300,8 @@ function QuestChainManager({
                       </div>
                     ) : (
                       <>
-                        <p className="title">{chain.name}</p>
-                        <div className="flex items-center justify-between p-3">
+                        <p className="title !-mt-2.5">{chain.name}</p>
+                        <div className="flex items-center justify-between px-3 pt-1 pb-3">
                           <div className="flex-grow min-w-0">
                             <div className="flex items-center space-x-4 text-sm mb-2">
                               <div className="flex items-center">
@@ -325,7 +325,7 @@ function QuestChainManager({
                                   <i key={`disp-coin-${i}`} className={`nes-icon coin is-small${i > 0 ? ' ml-px' : ''}`}></i>
                                 ))}
                                 {[...Array(Math.max(0, 4 - (chain.value ?? 0)))].map((_, i) => (
-                                  <i key={`disp-placeholder-${i}`} className={`nes-icon coin is-small opacity-25${i > 0 || (chain.value ?? 0) > 0 ? ' ml-px' : ''}`}></i>
+                                  <i key={`disp-placeholder-${i}`} className={`nes-icon coin is-small is-empty${i > 0 || (chain.value ?? 0) > 0 ? ' ml-px' : ''}`}></i>
                                 ))}
                               </div>
                             </div>

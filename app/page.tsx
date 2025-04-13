@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
-import type { Quest, QuestChain, Character, ViewType, SortOption, FilterOption } from "./types"
+import type { Quest, QuestChain, Character, Idea, ViewType, SortOption, FilterOption } from "./types"
 import { v4 as uuidv4 } from "uuid"
 import ListView from "@/components/views/ListView"
 import QuestDialog from "@/components/QuestDialog"
@@ -16,6 +16,18 @@ import "react-day-picker/dist/style.css"
 import { useSourceInfo } from "@/components/withSourceInfo"
 import { loadData, saveData } from './actions'; // Import server actions
 import { format, parseISO } from 'date-fns'; // Import parseISO if needed for initial dates
+import IdeaDialog from "@/components/IdeaDialog"; // Import the new dialog
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog" // Import Alert Dialog components
+import { cn } from '@/lib/utils'; // Ensure cn is imported if not already
 
 // Import the debug utilities
 import { exposeDebugUtils } from "./utils/debugUtils"
@@ -47,6 +59,11 @@ export default function Home() {
   const [filterBy, setFilterBy] = useState<FilterOption>("all")
   const [selectedCalendarDay, setSelectedCalendarDay] = useState<Date | undefined>()
   const [isLoading, setIsLoading] = useState<boolean>(true); // Added loading state
+  const [isIdeaDialogOpen, setIsIdeaDialogOpen] = useState(false); // State for Idea Dialog
+  const [ideas, setIdeas] = useState<Idea[]>([]); // State for ideas
+  const [editingIdea, setEditingIdea] = useState<Idea | null>(null); // State for editing idea
+  const [deletingIdeaId, setDeletingIdeaId] = useState<string | null>(null); // State for deleting idea ID
+  const [isIdeaDeleteConfirmOpen, setIsIdeaDeleteConfirmOpen] = useState(false); // State for delete confirm dialog
 
   // Load data from file using Server Action on initial mount
   useEffect(() => {
@@ -60,6 +77,7 @@ export default function Home() {
       setTodos(initialData.quests || []);
       setQuestChains(initialData.questChains || []);
       setCharacter(initialData.character);
+      setIdeas(initialData.ideas || []);
       setIsLoading(false);
     }
     fetchData();
@@ -71,8 +89,8 @@ export default function Home() {
     if (isLoading) return; 
     
     console.log("Data changed, attempting to save...");
-    saveData({ quests: todos, questChains, character }); // Use correct key 'quests'
-  }, [todos, questChains, character, isLoading]); // Added isLoading dependency
+    saveData({ quests: todos, questChains, character, ideas }); // Use correct key 'quests'
+  }, [todos, questChains, character, ideas, isLoading]); // Added isLoading dependency
 
   // Todo CRUD operations
   const addTodo = (newTodo: Quest) => {
@@ -245,6 +263,62 @@ export default function Home() {
     exportData()
   }
 
+  // Handle Add New Idea button click
+  const handleAddNewIdea = () => {
+    // TODO: Clear any currentIdea state if implementing editing later
+    setIsIdeaDialogOpen(true);
+  };
+
+  // Handler for saving a new idea (placeholder for now)
+  const handleSaveIdea = (ideaData: { name: string, description: string }) => {
+    const newIdea: Idea = {
+      ...ideaData,
+      id: uuidv4(),
+      createdAt: new Date(),
+    };
+    setIdeas([...ideas, newIdea]); // Add new idea to state
+    setIsIdeaDialogOpen(false); // Close dialog
+  };
+
+  // Edit Idea function
+  const editIdea = (updatedIdeaData: { name: string, description: string }) => {
+    if (!editingIdea) return;
+    setIdeas(ideas.map(idea => 
+      idea.id === editingIdea.id 
+        ? { ...idea, ...updatedIdeaData } // Update existing idea
+        : idea
+    ));
+    setEditingIdea(null); // Reset editing state
+    setIsIdeaDialogOpen(false); // Close dialog
+  };
+
+  // Handle Edit Idea button click
+  const handleEditIdeaClick = (idea: Idea) => {
+    setEditingIdea(idea);
+    setIsIdeaDialogOpen(true);
+  };
+
+  // Handle Delete Idea button click
+  const handleDeleteIdeaClick = (ideaId: string) => {
+    setDeletingIdeaId(ideaId);
+    setIsIdeaDeleteConfirmOpen(true);
+  };
+
+  // Confirm deletion
+  const confirmDeleteIdea = () => {
+    if (deletingIdeaId) {
+      setIdeas(ideas.filter(idea => idea.id !== deletingIdeaId));
+    }
+    setDeletingIdeaId(null);
+    setIsIdeaDeleteConfirmOpen(false);
+  };
+
+  // Cancel deletion
+  const cancelDeleteIdea = () => {
+    setDeletingIdeaId(null);
+    setIsIdeaDeleteConfirmOpen(false);
+  };
+
   // Render the appropriate view (conditionally based on loading state)
   const renderCurrentView = () => {
     // Render loading state first
@@ -280,6 +354,48 @@ export default function Home() {
             characterCreatedAt={character.createdAt}
           />
         )
+      case "ideas":
+        return (
+          <div className="space-y-4">
+            {ideas.length === 0 ? (
+              <div className="nes-container is-dark p-4 text-center">
+                <p className="nes-text is-disabled">No ideas captured yet. Add one!</p>
+              </div>
+            ) : (
+              ideas.map((idea) => (
+                <div key={idea.id} className="nes-container is-dark with-title">
+                  <p className="title !-mt-2.5">{idea.name}</p>
+                  <div className="p-3 pt-1"> {/* Match chain manager padding */}
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex-grow">
+                        <p className="nes-text break-words mb-2 text-sm">{idea.description || "(No description)"}</p>
+                        <p className="nes-text is-disabled text-xs">
+                          Created: {format(new Date(idea.createdAt), "MMM d, yyyy")}
+                        </p>
+                      </div>
+                      <div className="flex flex-col space-y-2">
+                        <button 
+                          type="button" 
+                          className="nes-btn is-primary is-small" 
+                          onClick={() => handleEditIdeaClick(idea)}
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          type="button" 
+                          className="nes-btn is-error is-small" 
+                          onClick={() => handleDeleteIdeaClick(idea.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        );
       default:
         return null
     }
@@ -363,11 +479,27 @@ export default function Home() {
               onSelect={setSelectedCalendarDay} 
             />
 
-            <QuestManagement
-              onAddQuest={handleAddNewQuest}
-              onManageChains={handleManageChains}
-              onExportData={handleExportData}
-            />
+            {/* Conditionally render management panels based on view */}
+            {currentView === 'list' && (
+              <QuestManagement
+                onAddQuest={handleAddNewQuest}
+                onManageChains={handleManageChains}
+                onExportData={handleExportData}
+              />
+            )}
+
+            {currentView === 'ideas' && (
+              <div className="nes-container is-dark with-title">
+                <p className="title">Idea Management</p>
+                <button 
+                  type="button" 
+                  className="nes-btn is-primary w-full"
+                  onClick={handleAddNewIdea}
+                >
+                  Add New Idea
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Main Content - Middle and Right Columns on medium+ screens */}
@@ -460,6 +592,37 @@ export default function Home() {
         onEditChain={editQuestChainName}
         onDeleteChain={deleteQuestChain}
       />
+
+      {/* Idea Dialog */}
+      <IdeaDialog
+        isOpen={isIdeaDialogOpen}
+        onClose={() => {
+          setIsIdeaDialogOpen(false);
+          setEditingIdea(null);
+        }}
+        onSave={editingIdea ? editIdea : handleSaveIdea}
+        idea={editingIdea}
+      />
+
+      {/* Idea Delete Confirmation Dialog */}
+      <AlertDialog open={isIdeaDeleteConfirmOpen} onOpenChange={(open) => !open && cancelDeleteIdea()}> 
+        <AlertDialogContent className={cn("nes-dialog is-dark !rounded-none max-w-[400px] w-[90vw]")}>
+          <AlertDialogHeader> 
+            <AlertDialogTitle className="nes-text is-warning">Confirm Delete</AlertDialogTitle> 
+            <AlertDialogDescription className="nes-text is-disabled"> 
+              Are you sure you want to delete this idea? This cannot be undone. 
+            </AlertDialogDescription> 
+          </AlertDialogHeader> 
+          <AlertDialogFooter className="flex justify-end space-x-4 mt-4"> 
+            <AlertDialogCancel asChild>
+              <button className="nes-btn" onClick={cancelDeleteIdea}>Cancel</button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <button className="nes-btn is-error" onClick={confirmDeleteIdea}>Delete</button>
+            </AlertDialogAction>
+          </AlertDialogFooter> 
+        </AlertDialogContent> 
+      </AlertDialog>
     </main>
   )
 }

@@ -464,7 +464,7 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
                             </span>
                             <div className="flex items-end space-x-2">
                                {/* New container for STACKING Stars and Coins */}
-                               <div className="flex flex-col items-center space-y-1 mr-1">
+                               <div className="flex flex-col items-start space-y-1 mr-1">
                                   {/* Difficulty Stars (Moved Here) */}
                                   <div className="flex items-center">
                                     {[1, 2, 3, 4].map(starIndex => (
@@ -480,9 +480,6 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
                                   <div className="flex items-center">
                                     {[...Array(todo.value ?? 0)].map((_, i) => (
                                       <i key={`coin-${i}`} className={`nes-icon coin is-small${i > 0 ? ' ml-px' : ''}`}></i>
-                                    ))}
-                                    {[...Array(Math.max(0, 4 - (todo.value ?? 0)))].map((_, i) => ( 
-                                      <i key={`empty-coin-${i}`} className={`nes-icon coin is-small is-empty${i > 0 || (todo.value ?? 0) > 0 ? ' ml-px' : ''}`}></i>
                                     ))}
                                   </div>
                                </div>

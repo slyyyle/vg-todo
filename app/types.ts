@@ -36,7 +36,14 @@ export interface Character {
   createdAt: Date | null; // Allow null again for error handling
 }
 
-export type ViewType = "card" | "list" | "calendar"
+export type ViewType = "list" | "grid" | "ideas"
 
-export type SortOption = "difficulty" | "dueDate" | "questType" | "chain"
+export type SortOption = "difficulty" | "dueDate" | "questType" | "createdAt" | "completedAt" | "updatedAt"
 export type FilterOption = "all" | "completed" | "active" | "chained" | "side" | "extra"
+
+export interface Idea {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: Date;
+}

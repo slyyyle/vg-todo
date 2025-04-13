@@ -2,12 +2,13 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import type { Quest, QuestChain, Character } from './types'; // Changed Todo to Quest
+import type { Quest, QuestChain, Character, Idea } from './types'; // Changed Todo to Quest, added Idea type
 
 interface AppData {
     quests: Quest[]; // Changed todos to quests
     questChains: QuestChain[];
     character: Character;
+    ideas: Idea[]; // Add ideas array
 }
 
 const dataFilePath = path.join(process.cwd(), 'data.json');
@@ -22,7 +23,8 @@ const defaultData: AppData = {
         avatar: "hero",
         progress: 0,
         createdAt: null // Default to null
-    }
+    },
+    ideas: [] // Initialize ideas as empty
 };
 
 // Action to load data from the JSON file
@@ -36,7 +38,8 @@ export async function loadData(): Promise<AppData> {
             quests: rawData.quests ?? [],
             questChains: rawData.questChains ?? [],
             // Merge character deeply to preserve existing fields if possible
-            character: { ...defaultData.character, ...(rawData.character ?? {}) } // Note: createdAt might be string here initially
+            character: { ...defaultData.character, ...(rawData.character ?? {}) }, // Note: createdAt might be string here initially
+            ideas: rawData.ideas ?? []
         };
 
         // --- IMPORTANT: Convert string dates back to Date objects ---
@@ -165,21 +168,41 @@ export async function loadData(): Promise<AppData> {
         }
         // --- End Character Date Processing ---
 
-        // Ensure all parts of the structure exist, using defaults if necessary
-        return data;
+        // --- Process Idea Dates --- 
+        if (data.ideas) {
+          data.ideas.forEach((idea: Idea) => {
+            if (idea.createdAt && typeof idea.createdAt === 'string') {
+              try {
+                const parsedDate = new Date(idea.createdAt);
+                idea.createdAt = !isNaN(parsedDate.getTime()) ? parsedDate : new Date(); // Default to now if invalid
+              } catch (e) {
+                console.error(`Error parsing createdAt for idea ${idea.id}:`, e);
+                idea.createdAt = new Date();
+              }
+            } else if (!idea.createdAt || !(idea.createdAt instanceof Date)) {
+              console.warn(`Missing or invalid createdAt for idea ${idea.id}. Assigning default.`);
+              idea.createdAt = new Date(); // Default to now if missing/wrong type
+            }
+          });
+        }
+        // --- End Idea Date Processing ---
+
+        return data; // Return data 
+
     } catch (error: any) {
         if (error.code === 'ENOENT') {
             console.log("Data file not found. Returning default data (with null createdAt) and creating file.");
             // Create the file with default data 
-            const dataToSave = { ...defaultData }; // defaultData already has createdAt: null
+            const dataToSave = { ...defaultData }; // defaultData already has createdAt: null and ideas: []
             await saveData(dataToSave);
             // Return a deep copy of default data
             return JSON.parse(JSON.stringify(dataToSave));
         } else {
              console.error("Error reading or parsing data file:", error);
-             // Return default data on other errors, ensuring createdAt is null
+             // Return default data on other errors, ensuring createdAt is null and ideas is array
              const safeDefault = JSON.parse(JSON.stringify(defaultData));
              safeDefault.character.createdAt = null; // Ensure null in error return
+             safeDefault.ideas = safeDefault.ideas ?? []; // Ensure ideas is an array
              return safeDefault;
         }
     }
@@ -190,9 +213,10 @@ export async function saveData(data: AppData): Promise<void> {
     try {
         // Ensure data exists before stringifying
         const dataToSave: AppData = {
-             quests: data.quests ?? [], // Changed todos to quests
+             quests: data.quests ?? [], 
              questChains: data.questChains ?? [],
              character: data.character ?? defaultData.character,
+             ideas: data.ideas ?? [] // Include ideas in saved data
         };
         const dataString = JSON.stringify(dataToSave, null, 2); // Pretty print JSON
         await fs.writeFile(dataFilePath, dataString, 'utf-8');
