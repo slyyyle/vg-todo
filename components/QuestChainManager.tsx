@@ -108,30 +108,6 @@ function QuestChainManager({
   const [editingValue, setEditingValue] = useState<number>(2)
   const [editingDueDate, setEditingDueDate] = useState<Date | undefined>(undefined)
 
-  const [isAddingChain, setIsAddingChain] = useState(false)
-  const [addConfirmSelection, setAddConfirmSelection] = useState<"yes" | "no">("no")
-
-  const handleAddChain = () => {
-    if (addConfirmSelection === "yes" && newChainName.trim()) {
-      onAddChain(newChainName, newChainDifficulty, newChainValue, newChainDueDate || null)
-      setNewChainName("")
-      setNewChainDifficulty(2.5)
-      setNewChainValue(2)
-      setNewChainDueDate(undefined)
-      setIsAddingChain(false)
-      setAddConfirmSelection("no")
-    }
-  }
-
-  const handleCancelAdd = () => {
-    setNewChainName("")
-    setNewChainDifficulty(2.5)
-    setNewChainValue(2)
-    setNewChainDueDate(undefined)
-    setIsAddingChain(false)
-    setAddConfirmSelection("no")
-  }
-
   const startEditing = (chain: QuestChain) => {
     setEditingId(chain.id)
     setEditingName(chain.name)
@@ -156,6 +132,23 @@ function QuestChainManager({
     onClose()
   }
 
+  const handleAddChain = () => {
+    if (newChainName.trim()) {
+      onAddChain(newChainName, newChainDifficulty, newChainValue, newChainDueDate || null)
+      setNewChainName("")
+      setNewChainDifficulty(2.5)
+      setNewChainValue(2)
+      setNewChainDueDate(undefined)
+    }
+  }
+
+  const handleCancelAdd = () => {
+    setNewChainName("")
+    setNewChainDifficulty(2.5)
+    setNewChainValue(2)
+    setNewChainDueDate(undefined)
+  }
+
   return (
     <div ref={ref} data-testid="quest-chain-manager">
       <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -175,122 +168,64 @@ function QuestChainManager({
           </DialogHeader>
 
           <div className="grid gap-4 px-6 pt-0 pb-0.5">
-            {isAddingChain ? (
-              <div className="grid gap-4 p-6 pt-0 border-b-4 border-dashed border-gray-600 pb-6 mb-6">
-                <div className="nes-field mb-2 mt-4">
-                  <label htmlFor="new-chain-name" className="nes-text is-disabled text-xs">Quest Chain Name</label>
-              <input
-                    id="new-chain-name"
-                type="text"
-                    className="nes-input"
-                value={newChainName}
-                onChange={(e) => setNewChainName(e.target.value)}
-                    placeholder="Enter new chain name"
-                    data-testid="new-chain-input"
-                onKeyDown={(e) => {
-                      if (e.key === "Enter" && newChainName.trim()) {
-                    handleAddChain()
-                  }
-                }}
-                  />
+            <div className="grid gap-4 pt-0 border-b-4 border-dashed border-gray-600 pb-6 mb-6">
+              <div className="nes-field mb-2 mt-4">
+                <label htmlFor="new-chain-name" className="nes-text is-disabled text-xs">Quest Chain Name</label>
+                <input
+                  id="new-chain-name"
+                  type="text"
+                  className="nes-input"
+                  value={newChainName}
+                  onChange={(e) => setNewChainName(e.target.value)}
+                  placeholder="Enter new chain name"
+                  data-testid="new-chain-input"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newChainName.trim()) {
+                      handleAddChain()
+                    }
+                  }}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                <div className="nes-container is-dark with-title !mb-0 !pb-2 !pt-1">
+                  <p className="title !-mt-2 !-ml-5">Difficulty</p>
+                  <DifficultyStars difficulty={newChainDifficulty} onChange={setNewChainDifficulty} />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-                  <div className="nes-container is-dark with-title !mb-0 !pb-2 !pt-1">
-                    <p className="title !-mt-2 !-ml-5">Difficulty</p>
-                    <DifficultyStars difficulty={newChainDifficulty} onChange={setNewChainDifficulty} />
-                  </div>
-                  <div className="nes-container is-dark with-title !mb-0 !pb-2 !pt-1">
-                    <p className="title !-mt-2 !-ml-5">Value</p>
-                    <div className="flex items-center justify-center py-1 space-x-2">
-                      <input
-                        type="range"
-                        min="0"
-                        max="4"
-                        step="1"
-                        value={newChainValue}
-                        onChange={(e) => setNewChainValue(parseInt(e.target.value, 10))}
-                        className="w-3/5"
-                        data-testid="new-chain-value"
-                      />
-                      <div className="flex items-center">
-                        <span className="nes-text is-white w-4 text-right">{newChainValue}</span>
-                        <i className="nes-icon coin is-medium ml-2"></i>
-                      </div>
+                <div className="nes-container is-dark with-title !mb-0 !pb-2 !pt-1">
+                  <p className="title !-mt-2 !-ml-5">Value</p>
+                  <div className="flex items-center justify-center py-1 space-x-2">
+                    <input
+                      type="range"
+                      min="0"
+                      max="4"
+                      step="1"
+                      value={newChainValue}
+                      onChange={(e) => setNewChainValue(parseInt(e.target.value, 10))}
+                      className="w-3/5"
+                      data-testid="new-chain-value"
+                    />
+                    <div className="flex items-center">
+                      <span className="nes-text is-white w-4 text-right">{newChainValue}</span>
+                      <i className="nes-icon coin is-medium ml-2"></i>
                     </div>
                   </div>
-                  <div className="nes-container is-dark with-title !mb-0 !pb-2 sm:col-span-2">
-                    <p className="title">Due Date</p>
-                    <NesDatePicker 
-                      selectedDate={newChainDueDate} 
-                      onDateChange={(day) => setNewChainDueDate(day)} 
-                      containerClassName="sm:col-span-2"
-                      testIdPrefix="new-chain-due-date"
-                    />
-                  </div>
                 </div>
-                <div style={{backgroundColor:"#212529", padding: "1rem 0"}} className="mt-4 text-center">
-                  <p className="mb-2 nes-text is-warning">Embark on new quest chain?</p>
-                  <label className="mr-4">
-                    <input 
-                      type="radio" 
-                      className="nes-radio is-dark" 
-                      name="add-confirm-dark" 
-                      value="yes"
-                      checked={addConfirmSelection === "yes"} 
-                      onChange={() => setAddConfirmSelection("yes")}
-                    />
-                    <span className="nes-text is-white ml-2">Yes</span>
-                  </label>
-                  <label>
-                    <input 
-                      type="radio" 
-                      className="nes-radio is-dark" 
-                      name="add-confirm-dark" 
-                      value="no"
-                      checked={addConfirmSelection === "no"} 
-                      onChange={() => setAddConfirmSelection("no")}
-                    />
-                    <span className="nes-text is-white ml-2">No</span>
-                  </label>
-                </div>
-                <div className="flex justify-end space-x-2 mt-2">
-                  <button
-                    type="button"
-                    className="nes-btn"
-                    onClick={handleCancelAdd}
-                    data-testid="cancel-add-chain-button"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className={`nes-btn ${addConfirmSelection === 'yes' && newChainName.trim() ? 'is-primary' : 'is-disabled'}`}
-                    onClick={handleAddChain}
-                    disabled={addConfirmSelection === 'no' || !newChainName.trim()}
-                    data-testid="confirm-add-chain-button"
-                  >
-                    Confirm
-                  </button>
+                <div className="sm:col-span-2">
+                  <NesDatePicker 
+                    selectedDate={newChainDueDate} 
+                    onDateChange={(day) => setNewChainDueDate(day)} 
+                    testIdPrefix="new-chain-due-date"
+                  />
                 </div>
               </div>
-            ) : (
-              <button
-                type="button"
-                className="nes-btn is-primary mb-6"
-                onClick={() => setIsAddingChain(true)}
-                data-testid="create-quest-chain-button"
-              >
-                Create Quest Chain
-              </button>
-            )}
+            </div>
 
-            {!isAddingChain && (
-              <div className="mt-2">
-                <p className="mb-4 nes-text is-primary">Quest Chains</p>
-            {questChains.length === 0 ? (
-              <p className="text-sm nes-text is-warning">No quest chains yet. Add one above!</p>
-            ) : (
-                  <ul className="space-y-4">
+            {/* Existing Chains List - Always show header */}
+            <h3 className="nes-text is-primary text-lg font-semibold">Existing Chains</h3>
+            
+            {/* Existing Chains List */}
+            {questChains.length > 0 ? (
+              <ul className="space-y-4">
                 {questChains.map((chain) => (
                   <li
                     key={chain.id}
@@ -298,157 +233,157 @@ function QuestChainManager({
                     data-testid={`chain-item-${chain.id}`}
                   >
                     {editingId === chain.id ? (
-                          <div className="space-y-3 p-3">
-                            <div className="nes-field">
-                              <label htmlFor={`edit-chain-name-${chain.id}`} className="nes-text is-disabled text-xs">Name</label>
-                        <input
-                                id={`edit-chain-name-${chain.id}`}
-                          type="text"
-                                className="nes-input"
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          autoFocus
-                          data-testid={`edit-chain-input-${chain.id}`}
-                        />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-                              <div className="nes-container is-dark with-title !mb-0 !pb-2 !pt-1">
-                                <p className="title !-mt-2 !-ml-5">Difficulty</p>
-                                <DifficultyStars difficulty={editingDifficulty} onChange={setEditingDifficulty} />
-                              </div>
-                              <div className="nes-container is-dark with-title !mb-0 !pb-2 !pt-1">
-                                <p className="title !-mt-2 !-ml-5">Value</p>
-                                <div className="flex items-center justify-center py-1 space-x-2">
-                                  <input
-                                    type="range"
-                                    min="0"
-                                    max="4"
-                                    step="1"
-                                    value={editingValue}
-                                    onChange={(e) => setEditingValue(parseInt(e.target.value, 10))}
-                                    className="w-3/5"
-                                    data-testid={`edit-chain-value-${chain.id}`}
-                                  />
-                                  <div className="flex items-center">
-                                    <span className="nes-text is-white w-4 text-right">{editingValue}</span>
-                                    <i className="nes-icon coin is-medium ml-2"></i>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="nes-container is-dark with-title !mb-0 !pb-2 sm:col-span-2">
-                                <p className="title">Due Date</p>
-                                <NesDatePicker 
-                                  selectedDate={editingDueDate} 
-                                  onDateChange={(day) => setEditingDueDate(day)} 
-                                  containerClassName="sm:col-span-2"
-                                  testIdPrefix={`edit-chain-due-date-${chain.id}`}
-                                />
+                      <div className="space-y-3 p-3">
+                        <div className="nes-field">
+                          <label htmlFor={`edit-chain-name-${chain.id}`} className="nes-text is-disabled text-xs">Name</label>
+                          <input
+                            id={`edit-chain-name-${chain.id}`}
+                            type="text"
+                            className="nes-input"
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            autoFocus
+                            data-testid={`edit-chain-input-${chain.id}`}
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                          <div className="nes-container is-dark with-title !mb-0 !pb-2 !pt-1">
+                            <p className="title !-mt-2 !-ml-5">Difficulty</p>
+                            <DifficultyStars difficulty={editingDifficulty} onChange={setEditingDifficulty} />
+                          </div>
+                          <div className="nes-container is-dark with-title !mb-0 !pb-2 !pt-1">
+                            <p className="title !-mt-2 !-ml-5">Value</p>
+                            <div className="flex items-center justify-center py-1 space-x-2">
+                              <input
+                                type="range"
+                                min="0"
+                                max="4"
+                                step="1"
+                                value={editingValue}
+                                onChange={(e) => setEditingValue(parseInt(e.target.value, 10))}
+                                className="w-3/5"
+                                data-testid={`edit-chain-value-${chain.id}`}
+                              />
+                              <div className="flex items-center">
+                                <span className="nes-text is-white w-4 text-right">{editingValue}</span>
+                                <i className="nes-icon coin is-medium ml-2"></i>
                               </div>
                             </div>
-                            <div className="flex justify-end space-x-2 mt-2">
+                          </div>
+                          <div className="sm:col-span-2">
+                            <NesDatePicker 
+                              selectedDate={editingDueDate} 
+                              onDateChange={(day) => setEditingDueDate(day)} 
+                              testIdPrefix={`edit-chain-due-date-${chain.id}`}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end space-x-2 mt-2">
                           <button
                             type="button"
                             className="nes-btn is-success"
                             onClick={saveEdit}
-                                disabled={!editingName.trim()}
+                            disabled={!editingName.trim()}
                             data-testid={`save-chain-edit-${chain.id}`}
                           >
-                                <Check className="h-4 w-4 mr-1" /> Save
+                            <Check className="h-4 w-4 mr-1" /> Save
                           </button>
                           <button
                             type="button"
-                                className="nes-btn is-error"
+                            className="nes-btn is-error"
                             onClick={cancelEdit}
                             data-testid={`cancel-chain-edit-${chain.id}`}
                           >
-                                <X className="h-4 w-4 mr-1" /> Cancel
+                            <X className="h-4 w-4 mr-1" /> Cancel
                           </button>
                         </div>
-                          </div>
-                        ) : (
-                          <>
-                          <p className="title">{chain.name}</p>
-                          <div className="flex items-center justify-between p-3">
-                            <div className="flex-grow min-w-0">
-                              <div className="flex items-center space-x-4 text-sm mb-2">
-                                <div className="flex items-center">
-                                  <span className="nes-text is-disabled text-xs">Diff:</span>
-                                  {[1, 2, 3, 4].map((starIndex) => {
-                                    const isFull = (chain.difficulty ?? 0) >= starIndex;
-                                    const isHalf = (chain.difficulty ?? 0) >= starIndex - 0.5 && (chain.difficulty ?? 0) < starIndex;
-                                    const isEmpty = (chain.difficulty ?? 0) < starIndex - 0.5;
-                                    const starClasses = cn(
-                                      "nes-icon is-small star",
-                                      { "is-half": isHalf },
-                                      { "is-empty": isEmpty },
-                                      starIndex > 1 ? "ml-px" : ""
-                                    );
-                                    return <i key={`disp-star-${starIndex}`} className={starClasses}></i>;
-                                  })}
-                                </div>
-                                <div className="flex items-center">
-                                  <span className="nes-text is-disabled text-xs">Val:</span>
-                                  {[...Array(chain.value ?? 0)].map((_, i) => (
-                                    <i key={`disp-coin-${i}`} className={`nes-icon coin is-small${i > 0 ? ' ml-px' : ''}`}></i>
-                                  ))}
-                                  {[...Array(Math.max(0, 4 - (chain.value ?? 0)))].map((_, i) => (
-                                    <i key={`disp-placeholder-${i}`} className={`nes-icon coin is-small opacity-25${i > 0 || (chain.value ?? 0) > 0 ? ' ml-px' : ''}`}></i>
-                                  ))}
-                                </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="title">{chain.name}</p>
+                        <div className="flex items-center justify-between p-3">
+                          <div className="flex-grow min-w-0">
+                            <div className="flex items-center space-x-4 text-sm mb-2">
+                              <div className="flex items-center">
+                                <span className="nes-text is-disabled text-xs">Diff:</span>
+                                {[1, 2, 3, 4].map((starIndex) => {
+                                  const isFull = (chain.difficulty ?? 0) >= starIndex;
+                                  const isHalf = (chain.difficulty ?? 0) >= starIndex - 0.5 && (chain.difficulty ?? 0) < starIndex;
+                                  const isEmpty = (chain.difficulty ?? 0) < starIndex - 0.5;
+                                  const starClasses = cn(
+                                    "nes-icon is-small star",
+                                    { "is-half": isHalf },
+                                    { "is-empty": isEmpty },
+                                    starIndex > 1 ? "ml-px" : ""
+                                  );
+                                  return <i key={`disp-star-${starIndex}`} className={starClasses}></i>;
+                                })}
                               </div>
-                              {/* Created Date Display (NEW) */}
-                              {chain.createdAt && (
-                                <div className="text-xs nes-text is-disabled mt-1">
-                                  Created: {format(new Date(chain.createdAt), "MMM d, yyyy")}
-                                </div>
-                              )}
-                              {/* Always display Due Date line */}
-                              <div className={cn(
-                                "text-xs",
-                                chain.dueDate ? "nes-text is-disabled" : "nes-text is-success",
-                                "mt-2"
-                              )}>
-                                Due Date: {chain.dueDate 
-                                  ? format(new Date(chain.dueDate), "MMM d, yyyy") 
-                                  : "Free Play!"}
+                              <div className="flex items-center">
+                                <span className="nes-text is-disabled text-xs">Val:</span>
+                                {[...Array(chain.value ?? 0)].map((_, i) => (
+                                  <i key={`disp-coin-${i}`} className={`nes-icon coin is-small${i > 0 ? ' ml-px' : ''}`}></i>
+                                ))}
+                                {[...Array(Math.max(0, 4 - (chain.value ?? 0)))].map((_, i) => (
+                                  <i key={`disp-placeholder-${i}`} className={`nes-icon coin is-small opacity-25${i > 0 || (chain.value ?? 0) > 0 ? ' ml-px' : ''}`}></i>
+                                ))}
                               </div>
                             </div>
-                            <div className="flex space-x-1">
-                          <button
-                            type="button"
-                                className="nes-btn is-primary is-small"
-                            onClick={() => startEditing(chain)}
-                            data-testid={`edit-chain-button-${chain.id}`}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                                className="nes-btn is-error is-small"
-                            onClick={() => onDeleteChain(chain.id)}
-                            data-testid={`delete-chain-button-${chain.id}`}
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
+                            {/* Created Date Display (NEW) */}
+                            {chain.createdAt && (
+                              <div className="text-xs nes-text is-disabled mt-1">
+                                Created: {format(new Date(chain.createdAt), "MMM d, yyyy")}
+                              </div>
+                            )}
+                            {/* Always display Due Date line */}
+                            <div className={cn(
+                              "text-xs",
+                              chain.dueDate ? "nes-text is-disabled" : "nes-text is-success",
+                              "mt-2"
+                            )}>
+                              Due Date: {chain.dueDate 
+                                ? format(new Date(chain.dueDate), "MMM d, yyyy") 
+                                : "Free Play!"}
+                            </div>
                           </div>
-                        </>
+                          <div className="flex space-x-1">
+                            <button
+                              type="button"
+                              className="nes-btn is-primary is-small"
+                              onClick={() => startEditing(chain)}
+                              data-testid={`edit-chain-button-${chain.id}`}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              className="nes-btn is-error is-small"
+                              onClick={() => onDeleteChain(chain.id)}
+                              data-testid={`delete-chain-button-${chain.id}`}
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </>
                     )}
                   </li>
                 ))}
               </ul>
-                )}
-              </div>
+            ) : (
+              <p className="text-sm nes-text is-warning">No quest chains yet. Add one above!</p>
             )}
           </div>
 
-          <DialogFooter className="p-6 pt-4 flex justify-between items-center sm:justify-between">
-            <div></div>
-            <div>
-            <button type="button" className="nes-btn" onClick={handleClose} data-testid="close-chain-manager-button">
-              <span className="nes-text is-black">Close</span>
+          <DialogFooter className="p-6 pt-4 flex justify-end space-x-2 border-t border-gray-700">
+            <button type="button" className="nes-btn" onClick={handleClose}>Close</button>
+            <button 
+              className={`nes-btn ${newChainName.trim() ? 'is-primary' : 'is-disabled'}`} 
+              onClick={handleAddChain} 
+              disabled={!newChainName.trim()}
+            >
+              Add Chain
             </button>
-            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -31,14 +31,14 @@ function NesDatePickerComponent({
   return (
     <div 
       ref={ref} 
-      // Apply nes-container styles, allow overriding/adding classes
+      // Re-add nes-container styles
       className={cn(
         "nes-container is-dark with-title !mb-0 !pb-2", 
         containerClassName
       )}
       data-testid={`${testIdPrefix}-container`}
     >
-      <p className="title">Due Date</p> {/* Use hardcoded title for now */}
+      <p className="title">Due Date</p> {/* Re-add hardcoded title */}
       <div className="flex items-center space-x-2">
         <Popover modal={true}>
           <PopoverTrigger 

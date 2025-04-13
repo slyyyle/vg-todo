@@ -463,26 +463,28 @@ function ListView({ todos, questChains, onToggleTodo, onDeleteTodo, onEditTodo, 
                                   : `Objectives: ${todo.objectives.filter((obj) => obj.completed).length}/${todo.objectives.length}`}
                             </span>
                             <div className="flex items-end space-x-2">
-                               {/* Stars */}
-                               <div className="flex items-center pb-1">
-                                  {[...Array(4)].map((_, i) => {
-                                     const starValue = i + 1;
-                                     const halfValue = i + 0.5;
-                                     let iconClass = "nes-icon is-small star";
-                                     if (todo.difficulty >= starValue) iconClass += "";
-                                     else if (todo.difficulty >= halfValue) iconClass += " is-half";
-                                     else iconClass += " is-empty";
-                                     return <i key={`star-${i}`} className={`${iconClass}${i > 0 ? ' ml-2' : ''}`}></i>;
-                                  })}
-                               </div>
-                               {/* Coins - Added right margin */}
-                               <div className="flex items-center pb-1 mr-2">
-                                  {[...Array(todo.value ?? 0)].map((_, i) => (
-                                     <i key={`coin-${i}`} className={`nes-icon coin is-small${i > 0 ? ' ml-1' : ''}`}></i>
-                                  ))}
-                                  {[...Array(4 - (todo.value ?? 0))].map((_, i) => (
-                                     <i key={`placeholder-${i}`} className={`nes-icon coin is-small opacity-25${i > 0 || (todo.value ?? 0) > 0 ? ' ml-1' : ''}`}></i>
-                                  ))}
+                               {/* New container for STACKING Stars and Coins */}
+                               <div className="flex flex-col items-center space-y-1 mr-1">
+                                  {/* Difficulty Stars (Moved Here) */}
+                                  <div className="flex items-center">
+                                    {[1, 2, 3, 4].map(starIndex => (
+                                      <i key={starIndex} className={cn(
+                                        "nes-icon is-small star",
+                                        { "is-half": (todo.difficulty ?? 0) >= starIndex - 0.5 && (todo.difficulty ?? 0) < starIndex },
+                                        { "is-empty": (todo.difficulty ?? 0) < starIndex - 0.5 },
+                                        starIndex > 1 ? "ml-px" : ""
+                                      )}></i>
+                                    ))}
+                                  </div>
+                                  {/* Value Coins (Moved Here) */}
+                                  <div className="flex items-center">
+                                    {[...Array(todo.value ?? 0)].map((_, i) => (
+                                      <i key={`coin-${i}`} className={`nes-icon coin is-small${i > 0 ? ' ml-px' : ''}`}></i>
+                                    ))}
+                                    {[...Array(Math.max(0, 4 - (todo.value ?? 0)))].map((_, i) => ( 
+                                      <i key={`empty-coin-${i}`} className={`nes-icon coin is-small is-empty${i > 0 || (todo.value ?? 0) > 0 ? ' ml-px' : ''}`}></i>
+                                    ))}
+                                  </div>
                                </div>
                                {/* Buttons - Ensure they are here */}
                                <button className="nes-btn is-primary is-small" onClick={() => onEditTodo(todo)}>
