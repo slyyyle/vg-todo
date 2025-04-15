@@ -13,7 +13,7 @@ This app is intended to be very low on the "gamification".  Most hard workers ne
 *   **More VG Skins:** DID YOU REALLY THINK I'M JUST *NOT* GOING TO USE SNES AND PLAYSTATION 1 CSS STYLE SHEETS WHEN THEY BOTH EXIST?
 *   **Actual XP Tracking:** Currently, XP tracking is exactly the *distraction* I mentioned above.  I do have an idea for a clear and customizable way to group quests and chains and reward them according to value * reward, but for now that's on the back burner so the XP for all quests is 10, and you'll either play because you love the game, or you didn't love the game!  Also, it's technically purely cosmetic.  If we remain Level 1, perhaps we will remain open minded to learning things we never could at Level 99.  Or maybe, I will return and stop the app from robbing XP.
 
-![image](https://github.com/user-attachments/assets/e3d6b57f-6c6e-420f-8bda-72b2712e8d7d)
+![image](https://github.com/user-attachments/assets/e2199e36-156c-4f35-a0cc-3c13c7f6e770)
 
 ## ✨ Key Features
 
