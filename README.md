@@ -54,7 +54,7 @@ In other words it was made with v0 and then pulled locally and further developed
     ```
 2.  **Install dependencies:**
     ```bash
-    npm install
+    npm install --legacy-peer-deps
     ```
 3.  **Run the development server:**
     ```bash
